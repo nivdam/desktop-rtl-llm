@@ -11,12 +11,36 @@ input:not([type]),
   text-align: start !important;
 }
 
+.local-rtl-editable-rtl,
+.local-rtl-editable-rtl p,
+.local-rtl-editable-rtl div,
+.local-rtl-editable-rtl.tiptap,
+.local-rtl-editable-rtl.ProseMirror,
+.local-rtl-editable-rtl.tiptap p,
+.local-rtl-editable-rtl.ProseMirror p {
+  direction: rtl !important;
+  unicode-bidi: plaintext !important;
+  text-align: start !important;
+}
+
+.local-rtl-editable-ltr,
+.local-rtl-editable-ltr p,
+.local-rtl-editable-ltr div,
+.local-rtl-editable-ltr.tiptap,
+.local-rtl-editable-ltr.ProseMirror,
+.local-rtl-editable-ltr.tiptap p,
+.local-rtl-editable-ltr.ProseMirror p {
+  direction: ltr !important;
+  unicode-bidi: plaintext !important;
+  text-align: start !important;
+}
+
 input[type="password"],
 [autocomplete="current-password"],
 [autocomplete="new-password"] {
   direction: ltr !important;
   unicode-bidi: isolate !important;
-  text-align: left !important;
+  text-align: start !important;
 }
 
 .local-rtl-message,
@@ -30,16 +54,87 @@ input[type="password"],
 [data-llm="codex"] .local-mixed-rtl-message,
 .local-rtl-app-codex .local-rtl-message,
 .local-rtl-app-codex .local-mixed-rtl-message {
-  text-align: right !important;
-  unicode-bidi: isolate !important;
+  text-align: start !important;
+  unicode-bidi: plaintext !important;
 }
 
 [data-llm="claude"] .local-rtl-message,
 [data-llm="claude"] .local-mixed-rtl-message,
 .local-rtl-app-claude .local-rtl-message,
 .local-rtl-app-claude .local-mixed-rtl-message {
-  text-align: right !important;
+  text-align: start !important;
   unicode-bidi: isolate !important;
+}
+
+[data-llm="claude"] .local-rtl-message *,
+[data-llm="claude"] .local-mixed-rtl-message *,
+.local-rtl-app-claude .local-rtl-message *,
+.local-rtl-app-claude .local-mixed-rtl-message * {
+  unicode-bidi: plaintext !important;
+}
+
+[data-llm="codex"] .local-rtl-message *,
+[data-llm="codex"] .local-mixed-rtl-message *,
+.local-rtl-app-codex .local-rtl-message *,
+.local-rtl-app-codex .local-mixed-rtl-message * {
+  unicode-bidi: plaintext !important;
+}
+
+[data-llm="codex"] table.local-rtl-message,
+[data-llm="codex"] table.local-mixed-rtl-message,
+[data-llm="codex"] .local-rtl-message table,
+[data-llm="codex"] .local-mixed-rtl-message table,
+.local-rtl-app-codex table.local-rtl-message,
+.local-rtl-app-codex table.local-mixed-rtl-message,
+.local-rtl-app-codex .local-rtl-message table,
+.local-rtl-app-codex .local-mixed-rtl-message table,
+[data-llm="claude"] table.local-rtl-message,
+[data-llm="claude"] table.local-mixed-rtl-message,
+[data-llm="claude"] .local-rtl-message table,
+[data-llm="claude"] .local-mixed-rtl-message table,
+.local-rtl-app-claude table.local-rtl-message,
+.local-rtl-app-claude table.local-mixed-rtl-message,
+.local-rtl-app-claude .local-rtl-message table,
+.local-rtl-app-claude .local-mixed-rtl-message table {
+  direction: rtl !important;
+  text-align: start !important;
+}
+
+[data-llm="codex"] table.local-rtl-message th,
+[data-llm="codex"] table.local-rtl-message td,
+[data-llm="codex"] table.local-mixed-rtl-message th,
+[data-llm="codex"] table.local-mixed-rtl-message td,
+[data-llm="codex"] .local-rtl-message table th,
+[data-llm="codex"] .local-rtl-message table td,
+[data-llm="codex"] .local-mixed-rtl-message table th,
+[data-llm="codex"] .local-mixed-rtl-message table td,
+.local-rtl-app-codex table.local-rtl-message th,
+.local-rtl-app-codex table.local-rtl-message td,
+.local-rtl-app-codex table.local-mixed-rtl-message th,
+.local-rtl-app-codex table.local-mixed-rtl-message td,
+.local-rtl-app-codex .local-rtl-message table th,
+.local-rtl-app-codex .local-rtl-message table td,
+.local-rtl-app-codex .local-mixed-rtl-message table th,
+.local-rtl-app-codex .local-mixed-rtl-message table td,
+[data-llm="claude"] table.local-rtl-message th,
+[data-llm="claude"] table.local-rtl-message td,
+[data-llm="claude"] table.local-mixed-rtl-message th,
+[data-llm="claude"] table.local-mixed-rtl-message td,
+[data-llm="claude"] .local-rtl-message table th,
+[data-llm="claude"] .local-rtl-message table td,
+[data-llm="claude"] .local-mixed-rtl-message table th,
+[data-llm="claude"] .local-mixed-rtl-message table td,
+.local-rtl-app-claude table.local-rtl-message th,
+.local-rtl-app-claude table.local-rtl-message td,
+.local-rtl-app-claude table.local-mixed-rtl-message th,
+.local-rtl-app-claude table.local-mixed-rtl-message td,
+.local-rtl-app-claude .local-rtl-message table th,
+.local-rtl-app-claude .local-rtl-message table td,
+.local-rtl-app-claude .local-mixed-rtl-message table th,
+.local-rtl-app-claude .local-mixed-rtl-message table td {
+  text-align: start !important;
+  padding-inline-end: 1rem !important;
+  padding-inline-start: 0 !important;
 }
 
 .local-ltr-message,
@@ -56,6 +151,8 @@ input[type="password"],
 
 .local-rtl-inline-ltr,
 .local-rtl-path-fragment,
+.inline-markdown,
+[class*="inlineMarkdown"],
 .local-rtl-message code,
 .local-rtl-message kbd,
 .local-rtl-message samp,
@@ -68,12 +165,70 @@ input[type="password"],
   unicode-bidi: isolate !important;
 }
 
+[data-llm="claude"] .local-rtl-message pre,
+[data-llm="claude"] .local-rtl-message pre *,
+[data-llm="claude"] .local-rtl-message code,
+[data-llm="claude"] .local-rtl-message code *,
+[data-llm="claude"] .local-mixed-rtl-message pre,
+[data-llm="claude"] .local-mixed-rtl-message pre *,
+[data-llm="claude"] .local-mixed-rtl-message code,
+[data-llm="claude"] .local-mixed-rtl-message code *,
+.local-rtl-app-claude .local-rtl-message pre,
+.local-rtl-app-claude .local-rtl-message pre *,
+.local-rtl-app-claude .local-rtl-message code,
+.local-rtl-app-claude .local-rtl-message code *,
+.local-rtl-app-claude .local-mixed-rtl-message pre,
+.local-rtl-app-claude .local-mixed-rtl-message pre *,
+.local-rtl-app-claude .local-mixed-rtl-message code,
+.local-rtl-app-claude .local-mixed-rtl-message code * {
+  unicode-bidi: isolate !important;
+  direction: ltr !important;
+  text-align: start !important;
+}
+
 .local-rtl-message ul,
 .local-rtl-message ol,
 .local-mixed-rtl-message ul,
-.local-mixed-rtl-message ol {
+.local-mixed-rtl-message ol,
+ul.local-rtl-message,
+ol.local-rtl-message,
+ul.local-mixed-rtl-message,
+ol.local-mixed-rtl-message {
+  display: block !important;
+  direction: rtl !important;
+  unicode-bidi: plaintext !important;
+  padding-inline-start: 1.5em !important;
+  padding-inline-end: 0 !important;
   padding-left: 0 !important;
   padding-right: 1.5em !important;
+  text-align: start !important;
+}
+
+.local-rtl-message li,
+.local-mixed-rtl-message li,
+li.local-rtl-message,
+li.local-mixed-rtl-message {
+  display: list-item !important;
+  padding-inline-start: 0 !important;
+  padding-inline-end: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  text-align: start !important;
+}
+
+ul.local-rtl-message > li,
+ol.local-rtl-message > li,
+ul.local-mixed-rtl-message > li,
+ol.local-mixed-rtl-message > li,
+.local-rtl-message ul > li,
+.local-rtl-message ol > li,
+.local-mixed-rtl-message ul > li,
+.local-mixed-rtl-message ol > li {
+  direction: rtl !important;
+  text-align: start !important;
+  unicode-bidi: plaintext !important;
+  margin-inline-start: 0 !important;
+  margin-inline-end: 0 !important;
 }
 
 pre,
@@ -99,6 +254,6 @@ samp,
 [data-local-rtl-kind="url"],
 [data-local-rtl-kind="json-like"] {
   direction: ltr !important;
-  text-align: left !important;
+  text-align: start !important;
   unicode-bidi: isolate !important;
 }

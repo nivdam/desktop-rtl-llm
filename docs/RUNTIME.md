@@ -60,13 +60,12 @@ Useful commands:
 
 ### `wrapTextNodes`
 
-Local overrides currently disable wrapping for both apps.
+Local overrides are app-specific.
 
 Reason:
 
-- text-node wrapping fixed some cases early on
-- later it became the main cause of broken mixed Hebrew/English layout
-- disabling it fixed Codex and improved Claude
+- Claude keeps wrapping enabled because mixed Hebrew/English sentences often need explicit segmentation.
+- Codex keeps wrapping disabled because the extra wrappers caused worse mixed-text ordering there.
 
 ### Mixed LTR/RTL classification
 
@@ -77,6 +76,10 @@ This matters for:
 - file paths at the start of a sentence
 - inline code before Hebrew prose
 - list items that begin with English identifiers
+
+Block children inside an RTL-rendered message can also inherit RTL context. This prevents Codex list items or table cells that start with English from jumping to the opposite side when they still contain Hebrew.
+
+Codex headings need special care: Codex uses heading classes that contain `InlineCode` in the class name. The runtime must not classify block headings as inline code just because their class name contains that substring.
 
 ### App markers
 
@@ -101,6 +104,8 @@ Current app-specific overrides exist for:
 - `[data-llm="claude"]`
 
 These help force stable RTL message rendering where the base generic rules were not enough.
+
+Tables and lists intentionally have explicit resets for both logical and physical spacing. Some desktop app DOM uses Tailwind-style physical classes such as `pl-*`, `pr-*`, or `text-left`, so logical properties alone are not enough.
 
 ## Known Operational Tradeoffs
 

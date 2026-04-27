@@ -48,6 +48,7 @@ Keep the current model until there is a concrete reason to replace it.
 1. Keep Codex on runtime injection.
 2. Keep local overrides small and explicit.
 3. Use diagnostics before editing CSS.
+4. Use DOM dumps for headings, tables, lists, and inline markdown before changing broad selectors.
 
 ### Medium-term plan
 
@@ -66,8 +67,9 @@ Keep the current model until there is a concrete reason to replace it.
 ### Avoid
 
 - global CSS rewrites without evidence
-- restoring `wrapTextNodes` by default
+- disabling `wrapTextNodes` for Claude without a concrete DOM example that proves it is still safe
 - assuming Claude and Codex can share the exact same DOM strategy
+- treating class-name fragments like `InlineCode` as proof that a block element is code
 
 ## Handoff Rule
 
