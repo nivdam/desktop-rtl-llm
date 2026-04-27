@@ -1,0 +1,5 @@
+logs/
+state/
+profiles/*.local.json
+*.log
+.DS_Store

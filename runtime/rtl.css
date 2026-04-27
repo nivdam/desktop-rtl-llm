@@ -1,0 +1,104 @@
+/* Local RTL Desktop Runtime. Keep this file app-agnostic and conservative. */
+
+textarea,
+input[type="text"],
+input:not([type]),
+[contenteditable="true"],
+[contenteditable="plaintext-only"],
+[role="textbox"] {
+  direction: auto !important;
+  unicode-bidi: plaintext !important;
+  text-align: start !important;
+}
+
+input[type="password"],
+[autocomplete="current-password"],
+[autocomplete="new-password"] {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  text-align: left !important;
+}
+
+.local-rtl-message,
+.local-mixed-rtl-message {
+  direction: rtl !important;
+  text-align: start !important;
+  unicode-bidi: plaintext !important;
+}
+
+[data-llm="codex"] .local-rtl-message,
+[data-llm="codex"] .local-mixed-rtl-message,
+.local-rtl-app-codex .local-rtl-message,
+.local-rtl-app-codex .local-mixed-rtl-message {
+  text-align: right !important;
+  unicode-bidi: isolate !important;
+}
+
+[data-llm="claude"] .local-rtl-message,
+[data-llm="claude"] .local-mixed-rtl-message,
+.local-rtl-app-claude .local-rtl-message,
+.local-rtl-app-claude .local-mixed-rtl-message {
+  text-align: right !important;
+  unicode-bidi: isolate !important;
+}
+
+.local-ltr-message,
+.local-mixed-ltr-message,
+.local-rtl-protected-ltr {
+  direction: ltr !important;
+  text-align: start !important;
+  unicode-bidi: isolate !important;
+}
+
+.local-rtl-text {
+  unicode-bidi: isolate !important;
+}
+
+.local-rtl-inline-ltr,
+.local-rtl-path-fragment,
+.local-rtl-message code,
+.local-rtl-message kbd,
+.local-rtl-message samp,
+.local-rtl-message a,
+.local-mixed-rtl-message code,
+.local-mixed-rtl-message kbd,
+.local-mixed-rtl-message samp,
+.local-mixed-rtl-message a {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+}
+
+.local-rtl-message ul,
+.local-rtl-message ol,
+.local-mixed-rtl-message ul,
+.local-mixed-rtl-message ol {
+  padding-left: 0 !important;
+  padding-right: 1.5em !important;
+}
+
+pre,
+code,
+kbd,
+samp,
+.monaco-editor,
+.cm-editor,
+[class*="terminal"],
+[class*="Terminal"],
+[class*="diff"],
+[class*="Diff"],
+[class*="codeBlock"],
+[class*="CodeBlock"],
+[class*="inlineCode"],
+[class*="InlineCode"],
+[data-language],
+[data-local-rtl-kind="code-block"],
+[data-local-rtl-kind="inline-code"],
+[data-local-rtl-kind="terminal-output"],
+[data-local-rtl-kind="diff-output"],
+[data-local-rtl-kind="file-path"],
+[data-local-rtl-kind="url"],
+[data-local-rtl-kind="json-like"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
