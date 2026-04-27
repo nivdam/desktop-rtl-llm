@@ -6,6 +6,7 @@
   const APPLIED_ATTR = "data-local-rtl-applied";
   const KIND_ATTR = "data-local-rtl-kind";
   const LAST_CLASS_ATTR = "data-local-rtl-class";
+  const EDITABLE_LOCK_ATTR = "data-local-rtl-editable-lock";
   const TEXT_WRAPPER_ATTR = "data-local-rtl-text-wrapper";
   const MATCHED_SELECTOR_ATTR = "data-local-rtl-matched-selector";
   const PREVIOUS_DIR_ATTR = "data-local-rtl-previous-dir";
@@ -29,6 +30,7 @@
   const inputSelectors = profile.inputSelectors || [];
   const includeAllowRoots = profile.includeAllowRoots === true;
   const wrapTextNodes = profile.wrapTextNodes !== false;
+  const editableStrategy = String(profile.editableStrategy || "direction-auto-plaintext");
 
   const stats = {
     scanned: 0,
@@ -46,6 +48,7 @@
   const touched = new Set();
   const wrappedTextNodes = new Set();
   const candidateSelectors = new WeakMap();
+  const cleanupCallbacks = [];
 
   const RTL_RANGES = [
     [0x0590, 0x05ff],
@@ -116,11 +119,129 @@
   }
 
   function isInsideDeny(element) {
+    if (isBlockTextCandidate(element)) {
+      return element.parentElement ? closestAny(element.parentElement, denySelectors) : false;
+    }
     return closestAny(element, denySelectors) || matchesAny(element, denySelectors);
   }
 
   function isEditable(element) {
     return matchesAny(element, inputSelectors) || element.isContentEditable;
+  }
+
+  function getEditableText(element) {
+    if (element instanceof HTMLTextAreaElement) return element.value || "";
+    if (element instanceof HTMLInputElement) return element.value || "";
+    return element.innerText || element.textContent || "";
+  }
+
+  function detectFirstStrongDirection(text) {
+    const trimmed = String(text || "").trim();
+    if (!trimmed) return "auto";
+    const analysis = analyzeText(trimmed);
+    if (analysis.firstStrong === "rtl") return "rtl";
+    if (analysis.firstStrong === "ltr") return "ltr";
+    return "auto";
+  }
+
+  function applyEditableDirection(element, nextDir) {
+    if (!(element instanceof Element)) return;
+    if (!element.hasAttribute(PREVIOUS_DIR_ATTR)) {
+      element.setAttribute(PREVIOUS_DIR_ATTR, element.getAttribute("dir") || "");
+    }
+
+    element.classList.remove("local-rtl-editable-rtl", "local-rtl-editable-ltr");
+    if (nextDir === "rtl") {
+      element.setAttribute("dir", "rtl");
+      element.classList.add("local-rtl-editable-rtl");
+    } else if (nextDir === "ltr") {
+      element.setAttribute("dir", "ltr");
+      element.classList.add("local-rtl-editable-ltr");
+    } else {
+      element.setAttribute("dir", "auto");
+    }
+    syncEditableMirror(element, nextDir);
+    touched.add(element);
+  }
+
+  function syncEditableMirror(element, nextDir) {
+    const parent = element.parentElement;
+    if (!parent) return;
+    const mirror = parent.querySelector('[class*="mentionMirror"]');
+    if (!(mirror instanceof Element)) return;
+
+    mirror.classList.remove("local-rtl-editable-rtl", "local-rtl-editable-ltr");
+    if (nextDir === "rtl") {
+      mirror.setAttribute("dir", "rtl");
+      mirror.classList.add("local-rtl-editable-rtl");
+    } else if (nextDir === "ltr") {
+      mirror.setAttribute("dir", "ltr");
+      mirror.classList.add("local-rtl-editable-ltr");
+    } else {
+      mirror.setAttribute("dir", "auto");
+    }
+    touched.add(mirror);
+  }
+
+  function findEditableRoot(target) {
+    if (!(target instanceof Element)) return null;
+    for (const selector of inputSelectors) {
+      const match = safeClosest(target, selector);
+      if (match) return match;
+    }
+    return target.isContentEditable ? target : null;
+  }
+
+  function updateEditableDirection(target) {
+    const editable = findEditableRoot(target);
+    if (!editable) return;
+    if (editableStrategy !== "dynamic-first-strong") return;
+    const text = getEditableText(editable);
+    const trimmed = String(text || "").trim();
+    if (!trimmed) {
+      editable.removeAttribute(EDITABLE_LOCK_ATTR);
+      applyEditableDirection(editable, "auto");
+      return;
+    }
+
+    const lockedDir = editable.getAttribute(EDITABLE_LOCK_ATTR);
+    const nextDir = lockedDir || detectFirstStrongDirection(text);
+    if (nextDir === "rtl" || nextDir === "ltr") {
+      editable.setAttribute(EDITABLE_LOCK_ATTR, nextDir);
+    }
+    applyEditableDirection(editable, nextDir);
+  }
+
+  function setupEditableDirectionHandling() {
+    if (editableStrategy !== "dynamic-first-strong") return;
+
+    const onEditableEvent = (event) => {
+      updateEditableDirection(event.target);
+    };
+
+    const onSelectionChange = () => {
+      const active = document.activeElement;
+      if (active) updateEditableDirection(active);
+    };
+
+    document.addEventListener("focusin", onEditableEvent, true);
+    document.addEventListener("input", onEditableEvent, true);
+    document.addEventListener("keyup", onEditableEvent, true);
+    document.addEventListener("selectionchange", onSelectionChange, true);
+
+    const intervalId = window.setInterval(() => {
+      const active = document.activeElement;
+      if (active) updateEditableDirection(active);
+      document.querySelectorAll(inputSelectors.join(", ")).forEach((element) => updateEditableDirection(element));
+    }, 200);
+
+    cleanupCallbacks.push(() => {
+      document.removeEventListener("focusin", onEditableEvent, true);
+      document.removeEventListener("input", onEditableEvent, true);
+      document.removeEventListener("keyup", onEditableEvent, true);
+      document.removeEventListener("selectionchange", onSelectionChange, true);
+      window.clearInterval(intervalId);
+    });
   }
 
   function isVisible(element) {
@@ -163,6 +284,9 @@
 
     const analysis = analyzeText(text);
     if (analysis.firstStrong === "rtl") return analysis.mixed ? "mixed-rtl-message" : "rtl-message";
+    if (analysis.firstStrong === "ltr" && analysis.mixed && shouldInheritRtlContext(element)) {
+      return "mixed-rtl-message";
+    }
     if (analysis.firstStrong === "ltr" && analysis.mixed && analysis.rtlRatio >= 0.3) {
       return "mixed-rtl-message";
     }
@@ -171,6 +295,26 @@
     }
     if (analysis.rtlRatio >= 0.3) return "mixed-rtl-message";
     return "unknown";
+  }
+
+  function isListElement(element) {
+    return element.tagName === "UL" || element.tagName === "OL";
+  }
+
+  function isInlineProtectedCandidate(element) {
+    if (isBlockTextCandidate(element)) return false;
+    return safeMatches(element, "code, kbd, samp, a, [class*='inlineCode'], [class*='InlineCode']");
+  }
+
+  function isBlockTextCandidate(element) {
+    return safeMatches(element, "p, li, blockquote, h1, h2, h3, h4, h5, h6, ul, ol, table, th, td");
+  }
+
+  function shouldInheritRtlContext(element) {
+    if (!isBlockTextCandidate(element)) return false;
+    const parent = element.parentElement;
+    if (!parent) return false;
+    return Boolean(safeClosest(parent, ".local-rtl-message, .local-mixed-rtl-message, [dir='rtl']"));
   }
 
   function classForKind(kind) {
@@ -235,7 +379,9 @@
       "samp",
       "a",
       ".inline-code",
+      ".inline-markdown",
       "[class*='inlineCode']",
+      "[class*='inlineMarkdown']",
       "[data-local-rtl-kind='file-path']",
       "[data-local-rtl-kind='url']",
       "[data-local-rtl-kind='json-like']",
@@ -263,17 +409,6 @@
       return node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.trim().length > 0;
     });
 
-    if (directTextNodes.length === 0 && element.children.length === 0 && element.textContent.trim()) {
-      element.classList.add("local-rtl-text");
-      if (!element.hasAttribute(PREVIOUS_DIR_ATTR)) {
-        element.setAttribute(PREVIOUS_DIR_ATTR, element.getAttribute("dir") || "");
-      }
-      element.setAttribute("dir", baseDir);
-      element.setAttribute(TEXT_WRAPPER_ATTR, "true");
-      touched.add(element);
-      return;
-    }
-
     for (const textNode of directTextNodes) {
       if (textNode.parentElement?.closest("code, kbd, samp, pre, a")) continue;
       wrapTextNodeWithBidiRuns(textNode, baseDir);
@@ -287,11 +422,16 @@
     let index = 0;
     let match = null;
 
-    function appendSpan(value, className, dir) {
+    function appendText(value) {
+      if (!value) return;
+      fragment.appendChild(document.createTextNode(value));
+    }
+
+    function appendPathSpan(value) {
       if (!value) return;
       const span = document.createElement("span");
-      span.className = className;
-      span.setAttribute("dir", dir);
+      span.className = "local-rtl-inline-ltr local-rtl-path-fragment";
+      span.setAttribute("dir", "ltr");
       span.setAttribute(TEXT_WRAPPER_ATTR, "true");
       span.textContent = value;
       fragment.appendChild(span);
@@ -300,11 +440,11 @@
     }
 
     while ((match = pathPattern.exec(text))) {
-      appendSpan(text.slice(index, match.index), "local-rtl-text", baseDir);
-      appendSpan(match[1], "local-rtl-inline-ltr local-rtl-path-fragment", "ltr");
+      appendText(text.slice(index, match.index));
+      appendPathSpan(match[1]);
       index = match.index + match[1].length;
     }
-    appendSpan(text.slice(index), "local-rtl-text", baseDir);
+    appendText(text.slice(index));
 
     if (!fragment.childNodes.length) return;
     textNode.parentNode.insertBefore(fragment, textNode);
@@ -376,7 +516,10 @@
 
     return Array.from(candidates).filter((candidate) => {
       for (const other of candidates) {
-        if (other !== candidate && candidate.contains(other)) return false;
+        if (other === candidate || !candidate.contains(other)) continue;
+        if (isInlineProtectedCandidate(other) || isInsideDeny(other)) continue;
+        if (isListElement(candidate) && safeMatches(other, "li")) continue;
+        if (isBlockTextCandidate(candidate) && isBlockTextCandidate(other)) return false;
       }
       return true;
     });
@@ -420,12 +563,20 @@
   function cleanup() {
     observer?.disconnect();
     observer = null;
+    cleanupCallbacks.splice(0).forEach((callback) => {
+      try {
+        callback();
+      } catch {
+        // Ignore cleanup errors for local runtime helpers.
+      }
+    });
     document.documentElement.removeAttribute("data-llm");
     document.documentElement.classList.remove(appClass);
     for (const element of touched) {
       const previousClass = element.getAttribute?.(LAST_CLASS_ATTR);
       if (previousClass) element.classList.remove(previousClass);
-      element.classList.remove?.("local-rtl-text", "local-rtl-inline-ltr", "local-rtl-has-path-fragment");
+      element.classList.remove?.("local-rtl-text", "local-rtl-inline-ltr", "local-rtl-has-path-fragment", "local-rtl-editable-rtl", "local-rtl-editable-ltr");
+      element.removeAttribute?.(EDITABLE_LOCK_ATTR);
       element.removeAttribute?.(APPLIED_ATTR);
       element.removeAttribute?.(KIND_ATTR);
       element.removeAttribute?.(LAST_CLASS_ATTR);
@@ -449,6 +600,7 @@
 
   observer = new MutationObserver(scheduleScan);
   observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  setupEditableDirectionHandling();
   scan();
 
   window[GLOBAL_KEY] = {

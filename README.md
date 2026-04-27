@@ -86,6 +86,7 @@ docs/
 
 ## Current Local Decisions
 
-- `wrapTextNodes` is disabled locally for both Claude and Codex.
+- `wrapTextNodes` stays enabled locally for Claude.
+- `wrapTextNodes` stays disabled locally for Codex.
 - App-specific CSS overrides exist for `[data-llm="codex"]` and `[data-llm="claude"]`.
 - Mixed messages that start in English but contain enough Hebrew should remain RTL.
