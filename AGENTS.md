@@ -64,5 +64,6 @@ If the issue is in Claude:
 
 Before changing runtime behavior, read:
 
+- `docs/RUNNING.md`
 - `docs/RUNTIME.md`
 - `docs/PLAN.md`

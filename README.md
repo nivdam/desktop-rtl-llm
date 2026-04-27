@@ -80,6 +80,7 @@ docs/
 
 ## Documentation
 
+- [docs/RUNNING.md](./docs/RUNNING.md)
 - [docs/RUNTIME.md](./docs/RUNTIME.md)
 - [docs/PLAN.md](./docs/PLAN.md)
 
