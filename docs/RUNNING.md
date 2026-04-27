@@ -65,16 +65,6 @@ open "$HOME/Applications/Claude RTL.app"
 
 This launches or attaches to Codex and injects the RTL runtime.
 
-### Hebrew mode from app
-
-There is also a direct launcher app:
-
-```text
-~/Applications/Codex RTL.app
-```
-
-Opening that app should trigger the same runtime flow for Codex.
-
 ### Diagnostics
 
 ```bash
@@ -109,7 +99,6 @@ Relevant app paths on this machine:
 /Applications/Claude.app
 /Applications/Codex.app
 ~/Applications/Claude RTL.app
-~/Applications/Codex RTL.app
 ```
 
 ## When To Reinstall
