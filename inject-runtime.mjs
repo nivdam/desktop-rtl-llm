@@ -278,7 +278,7 @@ Diagnostics are still available:
   try {
     await injectCss(client, css);
     await injectRuntime(client, runtime, { ...profile, diagnostics: options.diagnostics || profile.verboseDiagnostics });
-    const verified = await verifyInjection(client);
+    const verified = await waitForVerifiedInjection(client);
 
     if (!verified.ok) {
       await rollbackInjection(client);
@@ -759,7 +759,8 @@ async function collectTargets(port, profile) {
 
   while (Date.now() < deadline) {
     latestTargets = await collectTargetsOnce(port, profile);
-    if (latestTargets.some((target) => target.selected)) return latestTargets;
+    const selected = latestTargets.find((target) => target.selected);
+    if (selected && isTargetReadyForInjection(selected)) return latestTargets;
     await sleep(500);
   }
 
@@ -864,6 +865,12 @@ function scoreProbe(probe) {
   return score;
 }
 
+function isTargetReadyForInjection(target) {
+  const probe = target?.probe;
+  if (!target?.selected || !probe) return false;
+  return Number(probe.allowCount || 0) > 0 || Number(probe.inputCount || 0) > 0;
+}
+
 function matchesHint(value, hints = []) {
   const lower = value.toLowerCase();
   return hints.some((hint) => lower.includes(String(hint).toLowerCase()));
@@ -952,6 +959,20 @@ async function verifyInjection(client) {
     };
   })()`);
   return result;
+}
+
+async function waitForVerifiedInjection(client, options = {}) {
+  const timeoutMs = Number(options.timeoutMs || 20000);
+  const intervalMs = Number(options.intervalMs || 500);
+  const deadline = Date.now() + timeoutMs;
+  let latest = await verifyInjection(client);
+
+  while (!latest.ok && latest.reason === "no-allow-containers-scanned" && Date.now() < deadline) {
+    await sleep(intervalMs);
+    latest = await verifyInjection(client);
+  }
+
+  return latest;
 }
 
 async function dumpHtml(client, profile) {
