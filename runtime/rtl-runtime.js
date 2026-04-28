@@ -287,6 +287,9 @@
     if (analysis.firstStrong === "ltr" && analysis.mixed && shouldInheritRtlContext(element)) {
       return "mixed-rtl-message";
     }
+    if (appName === "claude" && analysis.firstStrong === "ltr" && analysis.mixed && analysis.rtlRatio >= 0.08) {
+      return "mixed-rtl-message";
+    }
     if (analysis.firstStrong === "ltr" && analysis.mixed && analysis.rtlRatio >= 0.3) {
       return "mixed-rtl-message";
     }
