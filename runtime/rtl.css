@@ -58,6 +58,19 @@ input[type="password"],
   unicode-bidi: plaintext !important;
 }
 
+[data-llm="codex"] .ProseMirror[data-codex-composer="true"],
+.local-rtl-app-codex .ProseMirror[data-codex-composer="true"] {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: plaintext !important;
+}
+
+[data-llm="codex"] .ProseMirror[data-codex-composer="true"] p,
+.local-rtl-app-codex .ProseMirror[data-codex-composer="true"] p {
+  direction: inherit !important;
+  text-align: inherit !important;
+}
+
 [data-llm="claude"] .local-rtl-message,
 [data-llm="claude"] .local-mixed-rtl-message,
 .local-rtl-app-claude .local-rtl-message,
