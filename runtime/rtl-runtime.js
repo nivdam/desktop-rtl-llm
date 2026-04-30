@@ -47,8 +47,10 @@
   let scheduled = false;
   const touched = new Set();
   const wrappedTextNodes = new Set();
+  const insertedRlmTextNodes = new Set();
   const candidateSelectors = new WeakMap();
   const cleanupCallbacks = [];
+  const RLM = "\u200f";
 
   const RTL_RANGES = [
     [0x0590, 0x05ff],
@@ -371,8 +373,30 @@
 
   function prepareRenderedText(element, kind) {
     if (!isRenderedMessageKind(kind)) return;
+    anchorCodexRtlBlock(element, kind);
     isolateInlineFragments(element);
     ensurePlaintextTextWrappers(element, kind);
+  }
+
+  function anchorCodexRtlBlock(element, kind) {
+    if (appName !== "codex") return;
+    if (kind !== "rtl-message" && kind !== "mixed-rtl-message") return;
+
+    const blockSelector = "p, li, blockquote, h1, h2, h3, h4, h5, h6";
+    const blocks = safeMatches(element, blockSelector) ? [element] : Array.from(element.querySelectorAll(blockSelector));
+
+    for (const block of blocks) {
+      if (!(block instanceof Element)) continue;
+      if (safeClosest(block, "pre, code, kbd, samp")) continue;
+      const blockKind = block === element ? kind : classifyElement(block);
+      if (blockKind !== "rtl-message" && blockKind !== "mixed-rtl-message") continue;
+      const first = block.firstChild;
+      if (first?.nodeType === Node.TEXT_NODE && first.textContent?.startsWith(RLM)) continue;
+
+      const anchor = document.createTextNode(RLM);
+      block.insertBefore(anchor, first || null);
+      insertedRlmTextNodes.add(anchor);
+    }
   }
 
   function isolateInlineFragments(element) {
@@ -597,6 +621,10 @@
       while (span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
       span.remove();
     }
+    for (const textNode of insertedRlmTextNodes) {
+      textNode.remove();
+    }
+    insertedRlmTextNodes.clear();
     wrappedTextNodes.clear();
     touched.clear();
   }
