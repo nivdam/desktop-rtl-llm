@@ -28,11 +28,13 @@ It is not an app product. It is a local tooling/runtime project.
 
 - `inject-runtime.mjs`
 - `claude-installer.mjs`
+- `setup-launchers.mjs`
 - `runtime/rtl-runtime.js`
 - `runtime/rtl.css`
 - `profiles/claude.json`
 - `profiles/codex.json`
 - `docs/RUNTIME.md`
+- `docs/LAUNCHERS.md`
 - `docs/PLAN.md`
 
 ## Local-Only State
@@ -58,7 +60,13 @@ If the issue is in Claude:
 1. Check `profiles/claude.local.json`.
 2. Change runtime or CSS carefully.
 3. Reinstall with `./run-rtl.sh claude --reinstall`.
-4. Re-open `~/Applications/Claude RTL.app`.
+4. Open with `./run-rtl.sh claude` or `Claude RTL Launcher.app`.
+
+If Spotlight launchers are missing or stale:
+
+```bash
+node setup-launchers.mjs
+```
 
 ## Handoff
 
@@ -66,4 +74,5 @@ Before changing runtime behavior, read:
 
 - `docs/RUNNING.md`
 - `docs/RUNTIME.md`
+- `docs/LAUNCHERS.md`
 - `docs/PLAN.md`

@@ -68,6 +68,7 @@ Launch:
 run-rtl.sh
 inject-runtime.mjs
 claude-installer.mjs
+setup-launchers.mjs
 runtime/
 profiles/
 docs/
@@ -85,6 +86,7 @@ docs/
 
 - [docs/RUNNING.md](./docs/RUNNING.md)
 - [docs/RUNTIME.md](./docs/RUNTIME.md)
+- [docs/LAUNCHERS.md](./docs/LAUNCHERS.md)
 - [docs/PLAN.md](./docs/PLAN.md)
 
 ## Current Local Decisions
