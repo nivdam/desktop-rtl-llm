@@ -16,13 +16,30 @@ cd /Users/nivdamianovich/BizoDam/desktop-rtl-llm
 
 ## Claude
 
-### Hebrew mode
+### Known limits
 
-If `Claude RTL.app` is already installed:
+`Claude RTL.app` is a patched local copy signed ad-hoc. Use it for Hebrew chat UI.
+
+Do not use it as the source of truth for:
+
+- app updates
+- Cowork/Workspace features that require macOS virtualization entitlements
+
+For those, use the original `/Applications/Claude.app`. After updating the original app, rebuild the RTL copy:
 
 ```bash
-open "$HOME/Applications/Claude RTL.app"
+./run-rtl.sh claude
 ```
+
+### Hebrew mode
+
+Launch Claude RTL through the sync-aware launcher:
+
+```bash
+./run-rtl.sh claude
+```
+
+This checks whether `/Applications/Claude.app` changed. If needed, it rebuilds `Claude RTL.app` before opening it.
 
 ### Install Claude RTL
 
@@ -30,7 +47,7 @@ If the app does not exist yet:
 
 ```bash
 ./run-rtl.sh claude --install
-open "$HOME/Applications/Claude RTL.app"
+./run-rtl.sh claude
 ```
 
 ### Reinstall Claude RTL after changes

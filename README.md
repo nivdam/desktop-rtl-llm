@@ -48,7 +48,9 @@ The original `/Applications/Claude.app` is not modified.
 Main commands:
 
 ```bash
+./run-rtl.sh claude
 ./run-rtl.sh claude --install
+./run-rtl.sh claude --sync
 ./run-rtl.sh claude --reinstall
 ./run-rtl.sh claude --status
 ./run-rtl.sh claude --uninstall
@@ -57,7 +59,7 @@ Main commands:
 Launch:
 
 ```bash
-open "$HOME/Applications/Claude RTL.app"
+./run-rtl.sh claude
 ```
 
 ## Repo Layout
@@ -75,7 +77,8 @@ docs/
 
 - `profiles/*.local.json` are ignored by git.
 - `logs/` and `state/` are ignored by git.
-- Claude requires reinstall after runtime or CSS changes.
+- Claude auto-syncs from `/Applications/Claude.app` when launched with `./run-rtl.sh claude`.
+- Claude still requires reinstall after runtime or CSS changes.
 - Codex does not require reinstall for normal runtime or CSS changes.
 
 ## Documentation

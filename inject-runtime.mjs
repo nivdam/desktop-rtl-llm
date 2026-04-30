@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, accessSync, constants } from "node:fs";
 import net from "node:net";
 import path from "node:path";
@@ -17,6 +18,10 @@ const CLAUDE_PROBE_STATE_FILE = path.join(STATE_DIR, "claude-probe-results.json"
 const DOM_DUMP_FILE = (appName) => path.join(STATE_DIR, `${appName}-dom-dump.html`);
 const DOM_DUMP_JSON_FILE = (appName) => path.join(STATE_DIR, `${appName}-dom-dump.json`);
 const LOG_FILE = path.join(LOG_DIR, "runtime.log");
+const CLAUDE_SOURCE_APP = "/Applications/Claude.app";
+const CLAUDE_SOURCE_ASAR = path.join(CLAUDE_SOURCE_APP, "Contents", "Resources", "app.asar");
+const CLAUDE_RTL_APP = path.join(process.env.HOME || "", "Applications", "Claude RTL.app");
+const CLAUDE_INSTALL_STATE_FILE = path.join(STATE_DIR, "claude-install.json");
 
 const VALID_APPS = new Set(["claude", "codex"]);
 const VALID_TARGETS = new Set(["claude", "codex", "all"]);
@@ -98,6 +103,7 @@ function parseArgs(args) {
     "--probe-only-no-launch",
     "--cleanup",
     "--install",
+    "--sync",
     "--reinstall",
     "--uninstall",
     "--status",
@@ -114,7 +120,7 @@ function parseArgs(args) {
     process.exit(0);
   }
 
-  const installerFlags = ["--install", "--reinstall", "--uninstall", "--status"].filter((flag) => flags.has(flag));
+  const installerFlags = ["--install", "--sync", "--reinstall", "--uninstall", "--status"].filter((flag) => flags.has(flag));
 
   if (flags.has("--list-apps")) {
     if (installerFlags.length > 0) throw new Error("--list-apps cannot be combined with Claude install commands");
@@ -163,9 +169,11 @@ function parsePort(value) {
 function printUsage() {
   console.log(`Usage:
   run-rtl.sh claude --install
+  run-rtl.sh claude --sync
   run-rtl.sh claude --reinstall
   run-rtl.sh claude --status
   run-rtl.sh claude --uninstall
+  run-rtl.sh claude
   run-rtl.sh claude --probe-launch [--cleanup]
   run-rtl.sh claude --probe-only-no-launch [--port 9222]
   run-rtl.sh codex [--dry-run] [--debug-targets] [--diagnostics] [--dump-html]
@@ -223,15 +231,7 @@ async function runForApp(profile) {
   }
 
   if (profile.name === "claude") {
-    console.error(`Claude Desktop on this machine does not support the clean CDP launch path.
-
-Use the installer path instead:
-  run-rtl.sh claude --install
-
-Diagnostics are still available:
-  run-rtl.sh claude --probe-launch
-  run-rtl.sh claude --probe-only-no-launch --port 9222`);
-    process.exitCode = 1;
+    syncAndLaunchClaudeRtl();
     return;
   }
 
@@ -307,6 +307,50 @@ function runClaudeInstaller(command) {
   const result = spawnSync(process.execPath, [script, command], { stdio: "inherit" });
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;
+}
+
+function syncAndLaunchClaudeRtl() {
+  const needsSync = claudeRtlNeedsSync();
+  if (needsSync) quitClaudeRtl();
+  runClaudeInstaller("--sync");
+  if (process.exitCode && process.exitCode !== 0) return;
+
+  const result = spawnSync("open", [CLAUDE_RTL_APP], { encoding: "utf8" });
+  if (result.status !== 0) {
+    throw new Error(`Failed to open Claude RTL: ${(result.stderr || result.stdout).trim()}`);
+  }
+  console.log("claude: Claude RTL is synced and opening.");
+}
+
+function claudeRtlNeedsSync() {
+  if (!existsSync(CLAUDE_RTL_APP)) return true;
+  if (!existsSync(CLAUDE_SOURCE_ASAR)) return true;
+  if (!existsSync(CLAUDE_INSTALL_STATE_FILE)) return true;
+
+  const state = JSON.parse(readFileSync(CLAUDE_INSTALL_STATE_FILE, "utf8"));
+  return state.sourceAsarSha256 !== sha256File(CLAUDE_SOURCE_ASAR);
+}
+
+function quitClaudeRtl() {
+  const result = spawnSync("pgrep", ["-fl", "Claude"], { encoding: "utf8" });
+  if (result.status !== 0) return;
+
+  const pids = result.stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.includes(`${CLAUDE_RTL_APP}/Contents/`))
+    .map((line) => line.split(/\s+/, 1)[0])
+    .filter(Boolean);
+
+  if (pids.length === 0) return;
+
+  spawnSync("kill", pids, { encoding: "utf8" });
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    const check = spawnSync("pgrep", ["-fl", "Claude"], { encoding: "utf8" });
+    if (check.status !== 0 || !check.stdout.includes(`${CLAUDE_RTL_APP}/Contents/`)) return;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+  }
 }
 
 async function runClaudeProbeOnlyNoLaunch(profile, port) {
@@ -1154,6 +1198,10 @@ function readAppVersion(appPath) {
   if (!existsSync(plist)) return "";
   const result = spawnSync("plutil", ["-extract", "CFBundleShortVersionString", "raw", "-o", "-", plist], { encoding: "utf8" });
   return result.status === 0 ? result.stdout.trim() : "";
+}
+
+function sha256File(filePath) {
+  return createHash("sha256").update(readFileSync(filePath)).digest("hex");
 }
 
 function getBundlePath(appPath) {

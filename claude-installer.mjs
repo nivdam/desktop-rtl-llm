@@ -38,9 +38,11 @@ main().catch((error) => {
 async function main() {
   if (command === "--install") return install();
   if (command === "--reinstall") {
+    assertClaudeRtlNotRunning();
     uninstall({ quiet: true });
     return install();
   }
+  if (command === "--sync") return sync();
   if (command === "--uninstall") return uninstall({ quiet: false });
   if (command === "--status") return status();
   printUsage();
@@ -50,6 +52,7 @@ async function main() {
 function printUsage() {
   console.log(`Usage:
   run-rtl.sh claude --install
+  run-rtl.sh claude --sync
   run-rtl.sh claude --reinstall
   run-rtl.sh claude --uninstall
   run-rtl.sh claude --status`);
@@ -57,7 +60,7 @@ function printUsage() {
 
 function install() {
   assertSourceApp();
-  assertClaudeNotRunning();
+  assertClaudeRtlNotRunning();
 
   const sourceVersion = readAppVersion(path.join(SOURCE_APP, "Contents", "MacOS", "Claude"));
   const sourceAsarSha256 = sha256File(SOURCE_ASAR);
@@ -97,6 +100,7 @@ function install() {
     console.log(`Installed: ${COPY_APP}`);
     console.log("Open it from Spotlight/Finder as \"Claude RTL\".");
     console.log("If macOS blocks first launch, right-click the app and choose Open once.");
+    console.log("Note: Claude RTL is a patched ad-hoc-signed copy. Use the original Claude.app for app updates and Cowork/Workspace features.");
   } catch (error) {
     rmSync(COPY_APP, { recursive: true, force: true });
     throw error;
@@ -104,10 +108,34 @@ function install() {
 }
 
 function uninstall({ quiet }) {
+  assertClaudeRtlNotRunning();
   rmSync(COPY_APP, { recursive: true, force: true });
   rmSync(INSTALL_STATE_FILE, { force: true });
   logEvent("claude-uninstall", { copyAppPath: COPY_APP });
   if (!quiet) console.log(`Removed: ${COPY_APP}`);
+}
+
+function sync() {
+  assertSourceApp();
+
+  if (!existsSync(COPY_APP)) {
+    console.log("Claude RTL copy is missing; installing from /Applications/Claude.app.");
+    return install();
+  }
+
+  const state = existsSync(INSTALL_STATE_FILE) ? JSON.parse(readFileSync(INSTALL_STATE_FILE, "utf8")) : null;
+  const currentSourceHash = sha256File(SOURCE_ASAR);
+  const sourceChanged = !state?.sourceAsarSha256 || state.sourceAsarSha256 !== currentSourceHash;
+
+  if (!sourceChanged) {
+    console.log("Claude RTL is already synced with /Applications/Claude.app.");
+    return;
+  }
+
+  console.log("Claude source changed; rebuilding Claude RTL from /Applications/Claude.app.");
+  assertClaudeRtlNotRunning();
+  uninstall({ quiet: true });
+  install();
 }
 
 function status() {
@@ -124,7 +152,11 @@ function status() {
   console.log(`  copyVersion: ${copyExists ? readAppVersion(path.join(COPY_APP, "Contents", "MacOS", "Claude")) || "unknown" : "missing"}`);
   console.log(`  installedAt: ${state?.installedAt || "not installed"}`);
   console.log(`  sourceChangedSinceInstall: ${sourceChanged ? "yes" : "no"}`);
-  if (sourceChanged) console.log("  nextStep: run-rtl.sh claude --reinstall");
+  if (copyExists) {
+    console.log("  updateSupport: no; update /Applications/Claude.app, then run ./run-rtl.sh claude");
+    console.log("  workspaceSupport: no; ad-hoc-signed copy cannot satisfy Claude Workspace virtualization entitlement");
+  }
+  if (sourceChanged) console.log("  nextStep: run-rtl.sh claude");
 }
 
 function assertSourceApp() {
@@ -136,21 +168,21 @@ function assertSourceApp() {
   }
 }
 
-function assertClaudeNotRunning() {
-  const processes = getClaudeProcesses();
+function assertClaudeRtlNotRunning() {
+  const processes = getClaudeRtlProcesses();
   if (processes.length > 0) {
-    throw new Error(`Claude is running. Quit Claude/Claude Helper first.\n${processes.map((item) => `  ${item}`).join("\n")}`);
+    throw new Error(`Claude RTL is running. Quit Claude RTL/Claude Helper first.\n${processes.map((item) => `  ${item}`).join("\n")}`);
   }
 }
 
-function getClaudeProcesses() {
+function getClaudeRtlProcesses() {
   const output = [];
   for (const pattern of ["Claude", "Claude Helper"]) {
     const result = spawnSync("pgrep", ["-fl", pattern], { encoding: "utf8" });
     if (result.status !== 0) continue;
     for (const line of result.stdout.split("\n")) {
       const trimmed = line.trim();
-      if (/\/Claude(?: RTL)?\.app\/Contents\//.test(trimmed)) output.push(trimmed);
+      if (trimmed.includes(`${COPY_APP}/Contents/`)) output.push(trimmed);
     }
   }
   return Array.from(new Set(output));

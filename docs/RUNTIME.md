@@ -119,6 +119,20 @@ Reason:
 - macOS Keychain trust is tied to app identity and signing state
 - reinstalling can invalidate previous trust
 
+### Claude updates and Workspace/Cowork
+
+`Claude RTL.app` is ad-hoc signed after patching. It should not be treated as the primary Claude install.
+
+Use the original `/Applications/Claude.app` for app updates. After the original app updates, rebuild the RTL copy with:
+
+```bash
+./run-rtl.sh claude
+```
+
+The launcher checks the source app hash and rebuilds `Claude RTL.app` automatically when the original app changed.
+
+Claude Workspace/Cowork features can require restricted macOS virtualization entitlements. The patched ad-hoc-signed copy can still fail those checks even when the entitlement key is present in the local signature. Use the original Claude app for those features.
+
 ### Reinstall requirement
 
 Claude changes require reinstall.
