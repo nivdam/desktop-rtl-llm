@@ -86,6 +86,13 @@ input[type="password"],
   unicode-bidi: plaintext !important;
 }
 
+[data-llm="claude"] textarea.local-rtl-editable-rtl,
+.local-rtl-app-claude textarea.local-rtl-editable-rtl {
+  box-sizing: border-box !important;
+  padding-left: 28px !important;
+  padding-right: 48px !important;
+}
+
 [data-llm="codex"] .local-rtl-message *,
 [data-llm="codex"] .local-mixed-rtl-message *,
 .local-rtl-app-codex .local-rtl-message *,
