@@ -191,6 +191,7 @@
     document.addEventListener("selectionchange", onSelectionChange, true);
 
     const intervalId = window.setInterval(() => {
+      if (!document.hasFocus()) return;
       const active = document.activeElement;
       if (active) updateEditableDirection(active);
       document.querySelectorAll(inputSelectors.join(", ")).forEach((element) => updateEditableDirection(element));
