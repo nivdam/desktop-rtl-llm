@@ -4,15 +4,10 @@
 
 This repo owns the local RTL runtime code for desktop LLM apps.
 
-The actual installed runtime may still exist here on the machine:
-
-```text
-$HOME/Library/Application Support/rtl-desktop-runtime
-```
-
-That installed copy is the currently active local deployment.
-
-This repo is the tracked project version.
+This repo is the only deployment. The old copy at
+`$HOME/Library/Application Support/rtl-desktop-runtime` was a stale
+April 2026 deployment and was deleted on 2026-06-11. The Spotlight
+launchers and `Claude RTL.app` are built from this repo directly.
 
 ## Integration Models
 
@@ -47,6 +42,17 @@ Claude uses a copied patched app bundle:
 
 This exists because the clean DevTools-based path was blocked on this machine.
 
+The patch lives in the Electron main process (`.vite/build/index.pre.js`).
+On every window load it reads `runtime/rtl-classifier.js`, `runtime/rtl-runtime.js`,
+`runtime/rtl.css`, and `profiles/claude*.json` from this repo and injects them
+via `webContents.insertCSS` + `webContents.executeJavaScript` — the same
+execution model as the Codex CDP injection. Copies baked at install time act
+as a fallback when the repo files are unreadable.
+
+Practical consequence: runtime/CSS/profile changes only need an app restart.
+Reinstall is needed only for `claude-installer.mjs` changes or Claude app updates
+(the launcher rebuilds automatically on app updates).
+
 Useful commands:
 
 ```bash
@@ -62,10 +68,10 @@ Useful commands:
 
 Local overrides are app-specific.
 
-Reason:
-
-- Claude keeps wrapping enabled because mixed Hebrew/English sentences often need explicit segmentation.
-- Codex keeps wrapping disabled because the extra wrappers caused worse mixed-text ordering there.
+Current local state: `wrapTextNodes` is disabled for both Claude and Codex
+via `profiles/*.local.json`. The extra wrappers caused worse mixed-text
+ordering in Codex, and Claude was later switched off as well. The tracked
+default in `profiles/claude.json` remains `true`; the local override wins.
 
 ### Mixed LTR/RTL classification
 
@@ -135,9 +141,11 @@ Claude Workspace/Cowork features can require restricted macOS virtualization ent
 
 ### Reinstall requirement
 
-Claude changes require reinstall.
+Claude runtime/CSS/profile changes require only an app restart (assets are
+read from the repo at launch). Reinstall is needed only for installer/bootstrap
+changes or Claude app updates.
 
-Codex changes usually do not.
+Codex changes never require reinstall; rerun the launcher.
 
 ## Debug Tools
 

@@ -67,7 +67,7 @@ Keep the current model until there is a concrete reason to replace it.
 ### Avoid
 
 - global CSS rewrites without evidence
-- disabling `wrapTextNodes` for Claude without a concrete DOM example that proves it is still safe
+- changing `wrapTextNodes` in either direction without a concrete DOM example (current local state: disabled for both apps via `profiles/*.local.json`)
 - assuming Claude and Codex can share the exact same DOM strategy
 - treating class-name fragments like `InlineCode` as proof that a block element is code
 

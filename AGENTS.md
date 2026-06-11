@@ -29,10 +29,12 @@ It is not an app product. It is a local tooling/runtime project.
 - `inject-runtime.mjs`
 - `claude-installer.mjs`
 - `setup-launchers.mjs`
+- `runtime/rtl-classifier.js`
 - `runtime/rtl-runtime.js`
 - `runtime/rtl.css`
 - `profiles/claude.json`
 - `profiles/codex.json`
+- `tests/classifier.test.mjs`
 - `docs/RUNTIME.md`
 - `docs/LAUNCHERS.md`
 - `docs/PLAN.md`
@@ -58,9 +60,9 @@ If the issue is in Codex:
 If the issue is in Claude:
 
 1. Check `profiles/claude.local.json`.
-2. Change runtime or CSS carefully.
-3. Reinstall with `./run-rtl.sh claude --reinstall`.
-4. Open with `./run-rtl.sh claude` or `Claude RTL Launcher.app`.
+2. Change runtime or CSS carefully, then run `node --test tests/*.test.mjs`.
+3. Restart `Claude RTL.app` (runtime/CSS/profile are read from the repo at launch).
+4. Reinstall with `./run-rtl.sh claude --reinstall` only if `claude-installer.mjs` changed.
 
 If Spotlight launchers are missing or stale:
 

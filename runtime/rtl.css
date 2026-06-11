@@ -1,4 +1,5 @@
 /* Local RTL Desktop Runtime. Keep this file app-agnostic and conservative. */
+/* App-specific overrides target [data-llm="..."], set on <html> by rtl-runtime.js. */
 
 textarea,
 input[type="text"],
@@ -51,52 +52,41 @@ input[type="password"],
 }
 
 [data-llm="codex"] .local-rtl-message,
-[data-llm="codex"] .local-mixed-rtl-message,
-.local-rtl-app-codex .local-rtl-message,
-.local-rtl-app-codex .local-mixed-rtl-message {
+[data-llm="codex"] .local-mixed-rtl-message {
   text-align: start !important;
   unicode-bidi: plaintext !important;
 }
 
-[data-llm="codex"] .ProseMirror[data-codex-composer="true"],
-.local-rtl-app-codex .ProseMirror[data-codex-composer="true"] {
+[data-llm="codex"] .ProseMirror[data-codex-composer="true"] {
   direction: rtl !important;
   text-align: right !important;
   unicode-bidi: plaintext !important;
 }
 
-[data-llm="codex"] .ProseMirror[data-codex-composer="true"] p,
-.local-rtl-app-codex .ProseMirror[data-codex-composer="true"] p {
+[data-llm="codex"] .ProseMirror[data-codex-composer="true"] p {
   direction: inherit !important;
   text-align: inherit !important;
 }
 
 [data-llm="claude"] .local-rtl-message,
-[data-llm="claude"] .local-mixed-rtl-message,
-.local-rtl-app-claude .local-rtl-message,
-.local-rtl-app-claude .local-mixed-rtl-message {
+[data-llm="claude"] .local-mixed-rtl-message {
   text-align: start !important;
   unicode-bidi: isolate !important;
 }
 
 [data-llm="claude"] .local-rtl-message *,
-[data-llm="claude"] .local-mixed-rtl-message *,
-.local-rtl-app-claude .local-rtl-message *,
-.local-rtl-app-claude .local-mixed-rtl-message * {
+[data-llm="claude"] .local-mixed-rtl-message * {
   unicode-bidi: plaintext !important;
 }
 
-[data-llm="claude"] textarea.local-rtl-editable-rtl,
-.local-rtl-app-claude textarea.local-rtl-editable-rtl {
+[data-llm="claude"] textarea.local-rtl-editable-rtl {
   box-sizing: border-box !important;
   padding-left: 28px !important;
   padding-right: 48px !important;
 }
 
 [data-llm="codex"] .local-rtl-message *,
-[data-llm="codex"] .local-mixed-rtl-message *,
-.local-rtl-app-codex .local-rtl-message *,
-.local-rtl-app-codex .local-mixed-rtl-message * {
+[data-llm="codex"] .local-mixed-rtl-message * {
   unicode-bidi: plaintext !important;
 }
 
@@ -104,18 +94,10 @@ input[type="password"],
 [data-llm="codex"] table.local-mixed-rtl-message,
 [data-llm="codex"] .local-rtl-message table,
 [data-llm="codex"] .local-mixed-rtl-message table,
-.local-rtl-app-codex table.local-rtl-message,
-.local-rtl-app-codex table.local-mixed-rtl-message,
-.local-rtl-app-codex .local-rtl-message table,
-.local-rtl-app-codex .local-mixed-rtl-message table,
 [data-llm="claude"] table.local-rtl-message,
 [data-llm="claude"] table.local-mixed-rtl-message,
 [data-llm="claude"] .local-rtl-message table,
-[data-llm="claude"] .local-mixed-rtl-message table,
-.local-rtl-app-claude table.local-rtl-message,
-.local-rtl-app-claude table.local-mixed-rtl-message,
-.local-rtl-app-claude .local-rtl-message table,
-.local-rtl-app-claude .local-mixed-rtl-message table {
+[data-llm="claude"] .local-mixed-rtl-message table {
   direction: rtl !important;
   text-align: start !important;
 }
@@ -128,14 +110,6 @@ input[type="password"],
 [data-llm="codex"] .local-rtl-message table td,
 [data-llm="codex"] .local-mixed-rtl-message table th,
 [data-llm="codex"] .local-mixed-rtl-message table td,
-.local-rtl-app-codex table.local-rtl-message th,
-.local-rtl-app-codex table.local-rtl-message td,
-.local-rtl-app-codex table.local-mixed-rtl-message th,
-.local-rtl-app-codex table.local-mixed-rtl-message td,
-.local-rtl-app-codex .local-rtl-message table th,
-.local-rtl-app-codex .local-rtl-message table td,
-.local-rtl-app-codex .local-mixed-rtl-message table th,
-.local-rtl-app-codex .local-mixed-rtl-message table td,
 [data-llm="claude"] table.local-rtl-message th,
 [data-llm="claude"] table.local-rtl-message td,
 [data-llm="claude"] table.local-mixed-rtl-message th,
@@ -143,15 +117,7 @@ input[type="password"],
 [data-llm="claude"] .local-rtl-message table th,
 [data-llm="claude"] .local-rtl-message table td,
 [data-llm="claude"] .local-mixed-rtl-message table th,
-[data-llm="claude"] .local-mixed-rtl-message table td,
-.local-rtl-app-claude table.local-rtl-message th,
-.local-rtl-app-claude table.local-rtl-message td,
-.local-rtl-app-claude table.local-mixed-rtl-message th,
-.local-rtl-app-claude table.local-mixed-rtl-message td,
-.local-rtl-app-claude .local-rtl-message table th,
-.local-rtl-app-claude .local-rtl-message table td,
-.local-rtl-app-claude .local-mixed-rtl-message table th,
-.local-rtl-app-claude .local-mixed-rtl-message table td {
+[data-llm="claude"] .local-mixed-rtl-message table td {
   text-align: start !important;
   padding-inline-end: 1rem !important;
   padding-inline-start: 0 !important;
@@ -192,15 +158,7 @@ input[type="password"],
 [data-llm="claude"] .local-mixed-rtl-message pre,
 [data-llm="claude"] .local-mixed-rtl-message pre *,
 [data-llm="claude"] .local-mixed-rtl-message code,
-[data-llm="claude"] .local-mixed-rtl-message code *,
-.local-rtl-app-claude .local-rtl-message pre,
-.local-rtl-app-claude .local-rtl-message pre *,
-.local-rtl-app-claude .local-rtl-message code,
-.local-rtl-app-claude .local-rtl-message code *,
-.local-rtl-app-claude .local-mixed-rtl-message pre,
-.local-rtl-app-claude .local-mixed-rtl-message pre *,
-.local-rtl-app-claude .local-mixed-rtl-message code,
-.local-rtl-app-claude .local-mixed-rtl-message code * {
+[data-llm="claude"] .local-mixed-rtl-message code * {
   unicode-bidi: isolate !important;
   direction: ltr !important;
   text-align: start !important;
@@ -233,7 +191,7 @@ li.local-mixed-rtl-message {
   padding-inline-end: 0 !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
-  text-align: start !important;
+  text-align: right !important;
 }
 
 ul.local-rtl-message > li,
@@ -245,10 +203,19 @@ ol.local-mixed-rtl-message > li,
 .local-mixed-rtl-message ul > li,
 .local-mixed-rtl-message ol > li {
   direction: rtl !important;
-  text-align: start !important;
+  text-align: right !important;
   unicode-bidi: plaintext !important;
   margin-inline-start: 0 !important;
   margin-inline-end: 0 !important;
+}
+
+/* Claude list items the classifier marked RTL must use isolate: plaintext rebases
+   on the first strong char, which flips Hebrew-dominant lines that open in English. */
+[data-llm="claude"] ul > li.local-rtl-message,
+[data-llm="claude"] ol > li.local-rtl-message,
+[data-llm="claude"] ul > li.local-mixed-rtl-message,
+[data-llm="claude"] ol > li.local-mixed-rtl-message {
+  unicode-bidi: isolate !important;
 }
 
 pre,

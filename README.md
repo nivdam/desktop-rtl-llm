@@ -79,8 +79,9 @@ docs/
 - `profiles/*.local.json` are ignored by git.
 - `logs/` and `state/` are ignored by git.
 - Claude auto-syncs from `/Applications/Claude.app` when launched with `./run-rtl.sh claude`.
-- Claude still requires reinstall after runtime or CSS changes.
+- Claude reads runtime/CSS/profile from this repo at launch — restart the app after changes; reinstall only after `claude-installer.mjs` changes.
 - Codex does not require reinstall for normal runtime or CSS changes.
+- Tests: `node --test tests/*.test.mjs` (pure classifier logic, no dependencies).
 
 ## Documentation
 
@@ -91,7 +92,6 @@ docs/
 
 ## Current Local Decisions
 
-- `wrapTextNodes` stays enabled locally for Claude.
-- `wrapTextNodes` stays disabled locally for Codex.
+- `wrapTextNodes` is disabled locally for both Claude and Codex via `profiles/*.local.json`. The tracked default in `profiles/claude.json` is still `true`, but the local overrides win and are what gets baked into `Claude RTL.app`.
 - App-specific CSS overrides exist for `[data-llm="codex"]` and `[data-llm="claude"]`.
 - Mixed messages that start in English but contain enough Hebrew should remain RTL.
