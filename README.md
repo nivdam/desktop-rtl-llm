@@ -11,6 +11,16 @@ block and applies the right direction — while code blocks, inline code, file p
 and URLs stay strictly LTR. No fork, no proxy, no cloud: the original apps are never
 modified.
 
+## Before / after
+
+**Claude Desktop** — the original app vs. `Claude RTL.app`, same conversation:
+
+![Claude Desktop: before and after](./docs/media/claude-side-by-side.png)
+
+**Codex Desktop** — before vs. after runtime injection:
+
+![Codex Desktop: before and after](./docs/media/codex-side-by-side.png)
+
 ## What you get
 
 - **Per-block direction detection** — first-strong-character with a ratio fallback,
