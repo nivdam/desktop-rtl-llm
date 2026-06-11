@@ -1,97 +1,89 @@
 # desktop-rtl-llm
 
-Local RTL runtime for desktop LLM apps.
+**Hebrew and Arabic finally render right in Claude Desktop and Codex Desktop.**
 
-This project currently supports:
+Chat in Hebrew with Claude or Codex on macOS and the UI fights you: sentences are
+left-aligned, mixed Hebrew/English lines read out of order, list numbers jump from
+side to side, punctuation lands on the wrong end of the sentence.
 
-- Claude Desktop
-- Codex Desktop
+This project fixes that locally. A small bidi-aware runtime classifies every message
+block and applies the right direction — while code blocks, inline code, file paths,
+and URLs stay strictly LTR. No fork, no proxy, no cloud: the original apps are never
+modified.
 
-The goal is to make Hebrew render correctly in desktop chat UIs while keeping the original app installs untouched whenever possible.
+## What you get
 
-## Current Architecture
+- **Per-block direction detection** — first-strong-character with a ratio fallback,
+  so a Hebrew sentence that opens with `useQuery` still reads right-to-left
+- **Code stays code** — fenced blocks, inline code, file paths, URLs, and JSON-like
+  text are pinned LTR
+- **Lists that don't zigzag** — mixed Hebrew/English lists keep a single marker
+  column and consistent alignment
+- **Tables, headings, blockquotes** — direction-aware, with app-specific fixes where
+  the DOM needs them
+- **RTL-aware composer** — the input box follows the first strong character of what
+  you type
+- **Local and reversible** — no network calls, no telemetry, plain readable JS/CSS;
+  one command uninstalls
 
-There are two integration modes.
+## Quick start
 
-### Codex
-
-Codex uses runtime injection against the normal installed app.
-
-Main command:
-
-```bash
-./run-rtl.sh codex
-```
-
-Debug command:
-
-```bash
-./run-rtl.sh codex --diagnostics
-```
-
-Optional DOM dump:
-
-```bash
-./run-rtl.sh codex --dump-html --diagnostics
-```
-
-### Claude
-
-Claude currently uses a separate local copied app:
-
-```text
-~/Applications/Claude RTL.app
-```
-
-The original `/Applications/Claude.app` is not modified.
-
-Main commands:
+Requires macOS and Node 20+.
 
 ```bash
-./run-rtl.sh claude
-./run-rtl.sh claude --install
-./run-rtl.sh claude --sync
-./run-rtl.sh claude --reinstall
-./run-rtl.sh claude --status
-./run-rtl.sh claude --uninstall
+git clone https://github.com/nivdam/desktop-rtl-llm.git
+cd desktop-rtl-llm
 ```
 
-Launch:
+### Claude Desktop
 
 ```bash
-./run-rtl.sh claude
+./run-rtl.sh claude --install   # builds ~/Applications/"Claude RTL.app" (one time)
+./run-rtl.sh claude             # launches it (auto-rebuilds after Claude updates)
 ```
 
-## Repo Layout
+The original `/Applications/Claude.app` keeps working untouched — use it for app
+updates and for features that need Apple-issued entitlements (Cowork/Workspace).
+Remove everything with `./run-rtl.sh claude --uninstall`.
 
-```text
-run-rtl.sh
-inject-runtime.mjs
-claude-installer.mjs
-setup-launchers.mjs
-runtime/
-profiles/
-docs/
+### Codex Desktop
+
+```bash
+./run-rtl.sh codex              # launches/attaches and injects the runtime
 ```
 
-## Important Notes
+No copied app needed; rerun the command after the app restarts.
 
-- `profiles/*.local.json` are ignored by git.
-- `logs/` and `state/` are ignored by git.
-- Claude auto-syncs from `/Applications/Claude.app` when launched with `./run-rtl.sh claude`.
-- Claude reads runtime/CSS/profile from this repo at launch — restart the app after changes; reinstall only after `claude-installer.mjs` changes.
-- Codex does not require reinstall for normal runtime or CSS changes.
-- Tests: `node --test tests/*.test.mjs` (pure classifier logic, no dependencies).
+## How it works
 
-## Documentation
+Two integration models, one shared runtime (`runtime/` + per-app `profiles/`):
 
-- [docs/RUNNING.md](./docs/RUNNING.md)
-- [docs/RUNTIME.md](./docs/RUNTIME.md)
-- [docs/LAUNCHERS.md](./docs/LAUNCHERS.md)
-- [docs/PLAN.md](./docs/PLAN.md)
+- **Codex** — runtime injection over the DevTools protocol into the normally
+  installed app.
+- **Claude** — Claude's renderer can't be reached over CDP, so the installer builds
+  a patched, ad-hoc-signed copy at `~/Applications/Claude RTL.app`. The patch lives
+  in the Electron main process and reads the runtime, CSS, and profiles from this
+  repo at every launch — changing them only requires an app restart.
 
-## Current Local Decisions
+The classifier is pure logic with tests (`node --test tests/*.test.mjs`) and covers
+all RTL scripts (Hebrew, Arabic, Syriac, Thaana, N'Ko). Day-to-day testing happens
+in Hebrew — issues and reports for other scripts are welcome.
 
-- `wrapTextNodes` is disabled locally for both Claude and Codex via `profiles/*.local.json`. The tracked default in `profiles/claude.json` is still `true`, but the local overrides win and are what gets baked into `Claude RTL.app`.
-- App-specific CSS overrides exist for `[data-llm="codex"]` and `[data-llm="claude"]`.
-- Mixed messages that start in English but contain enough Hebrew should remain RTL.
+Deep dives: [docs/RUNTIME.md](./docs/RUNTIME.md) ·
+[docs/RUNNING.md](./docs/RUNNING.md) ·
+[docs/LAUNCHERS.md](./docs/LAUNCHERS.md) ·
+[docs/PLAN.md](./docs/PLAN.md)
+
+## Good to know
+
+- `profiles/*.local.json`, `logs/`, and `state/` are machine-local and git-ignored.
+- `Claude RTL.app` is ad-hoc signed; macOS may re-prompt for Keychain access after a
+  rebuild.
+- Spotlight launchers ("Claude RTL Launcher" / "Codex RTL Launcher"):
+  `node setup-launchers.mjs`.
+- Tested against Claude Desktop 1.11847 and Codex Desktop 26.608. App DOM changes
+  are absorbed in `profiles/*.json` selectors, not code rewrites.
+
+## License
+
+[MIT](./LICENSE)
