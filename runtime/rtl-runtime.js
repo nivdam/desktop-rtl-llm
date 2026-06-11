@@ -468,7 +468,8 @@
       for (const other of candidates) {
         if (other === candidate || !candidate.contains(other)) continue;
         if (isInlineProtectedCandidate(other) || isInsideDeny(other)) continue;
-        if (isListElement(candidate) && safeMatches(other, "li")) continue;
+        const listItemOfCandidate = isListElement(candidate) ? safeClosest(other, "li") : null;
+        if (listItemOfCandidate && candidate.contains(listItemOfCandidate)) continue;
         if (isBlockTextCandidate(candidate) && isBlockTextCandidate(other)) return false;
       }
       return true;
