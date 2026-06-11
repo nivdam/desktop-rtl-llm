@@ -100,9 +100,10 @@ anchors inserted at the start of RTL blocks.
 ### Claude DOM (1.11847+)
 
 Claude desktop renamed its markdown container from `.standard-markdown` to
-`.epitaxy-markdown`. `profiles/claude.json` carries selectors for both so older
-app versions keep working. If lists/tables silently stop being classified after a
-Claude update, check this class name first (diagnostics flow in `RUNNING.md`).
+`.epitaxy-markdown` (verified live: the old class no longer exists in the DOM).
+`profiles/claude.json` tracks the current class only. If lists/tables silently
+stop being classified after a Claude update, check this class name first
+(diagnostics flow in `RUNNING.md`).
 
 Codex headings need special care: Codex uses heading classes that contain `InlineCode` in the class name. The runtime must not classify block headings as inline code just because their class name contains that substring.
 

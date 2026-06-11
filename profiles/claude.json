@@ -18,7 +18,7 @@
   "allowSelectors": [
     "main",
     "article",
-    ".standard-markdown",
+    ".epitaxy-markdown",
     "[data-testid]",
     "[role='main']",
     "[class*='message']",
@@ -59,14 +59,6 @@
     "p",
     "li",
     "blockquote",
-    ".standard-markdown > p",
-    ".standard-markdown > li",
-    ".standard-markdown > blockquote",
-    ".standard-markdown ol",
-    ".standard-markdown ul",
-    ".standard-markdown > table",
-    ".standard-markdown th",
-    ".standard-markdown td",
     ".epitaxy-markdown ol",
     ".epitaxy-markdown ul",
     ".epitaxy-markdown table",
@@ -83,7 +75,7 @@
     "[class*='message']"
   ],
   "messageSelectors": [
-    ".standard-markdown",
+    ".epitaxy-markdown",
     "[data-testid]",
     "[class*='message']",
     ".prose",
