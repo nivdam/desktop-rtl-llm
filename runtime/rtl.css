@@ -118,7 +118,8 @@ input[type="password"],
 [data-llm="claude"] .local-rtl-message table td,
 [data-llm="claude"] .local-mixed-rtl-message table th,
 [data-llm="claude"] .local-mixed-rtl-message table td {
-  text-align: start !important;
+  /* right, not start: per-content alignment lets adjacent mixed-language cells collide */
+  text-align: right !important;
   padding-inline-end: 1rem !important;
   padding-inline-start: 0 !important;
 }
