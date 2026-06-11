@@ -272,7 +272,8 @@ async function runForApp(profile) {
   }
 
   const css = readFileSync(path.join(RUNTIME_DIR, "rtl.css"), "utf8");
-  const runtime = readFileSync(path.join(RUNTIME_DIR, "rtl-runtime.js"), "utf8");
+  const classifier = readFileSync(path.join(RUNTIME_DIR, "rtl-classifier.js"), "utf8");
+  const runtime = `${classifier}\n${readFileSync(path.join(RUNTIME_DIR, "rtl-runtime.js"), "utf8")}`;
   const client = await CdpClient.connect(selected.webSocketDebuggerUrl);
 
   try {

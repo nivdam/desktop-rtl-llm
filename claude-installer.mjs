@@ -232,7 +232,8 @@ function patchClaudeAsar() {
 
 function buildBootstrap() {
   const css = readFileSync(path.join(ROOT, "runtime", "rtl.css"), "utf8");
-  const runtime = readFileSync(path.join(ROOT, "runtime", "rtl-runtime.js"), "utf8");
+  const classifier = readFileSync(path.join(ROOT, "runtime", "rtl-classifier.js"), "utf8");
+  const runtime = `${classifier}\n${readFileSync(path.join(ROOT, "runtime", "rtl-runtime.js"), "utf8")}`;
   const profile = mergeJsonObjects(
     readOptionalJson(path.join(ROOT, "profiles", "claude.json")),
     readOptionalJson(path.join(ROOT, "profiles", "claude.local.json")),
