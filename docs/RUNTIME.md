@@ -85,6 +85,25 @@ This matters for:
 
 Block children inside an RTL-rendered message can also inherit RTL context. This prevents Codex list items or table cells that start with English from jumping to the opposite side when they still contain Hebrew.
 
+### Lists
+
+Lists are classified as a single unit: the `ul`/`ol` is itself a candidate, and a
+block element inside an `li` (such as a `<p>`) does not disqualify it. All items of
+an RTL-classified list share one right-hand marker column and right alignment, so
+mixed Hebrew/English lists do not zigzag.
+
+In Claude, items the classifier marked RTL get `unicode-bidi: isolate` instead of
+`plaintext` — plaintext rebases on the first strong character, which flips
+Hebrew-dominant items that open in English. Codex reaches the same result with RLM
+anchors inserted at the start of RTL blocks.
+
+### Claude DOM (1.11847+)
+
+Claude desktop renamed its markdown container from `.standard-markdown` to
+`.epitaxy-markdown`. `profiles/claude.json` carries selectors for both so older
+app versions keep working. If lists/tables silently stop being classified after a
+Claude update, check this class name first (diagnostics flow in `RUNNING.md`).
+
 Codex headings need special care: Codex uses heading classes that contain `InlineCode` in the class name. The runtime must not classify block headings as inline code just because their class name contains that substring.
 
 ### App markers
