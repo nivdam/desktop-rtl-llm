@@ -315,11 +315,28 @@
       if (blockKind !== "rtl-message" && blockKind !== "mixed-rtl-message") continue;
       const first = block.firstChild;
       if (first?.nodeType === Node.TEXT_NODE && first.textContent?.startsWith(RLM)) continue;
+      /* An RLM before a block child lands in an anonymous box and creates an empty
+         first line (pushes list markers onto their own line). The nested block gets
+         its own anchor instead. */
+      if (startsWithBlockChild(block)) continue;
 
       const anchor = document.createTextNode(RLM);
       block.insertBefore(anchor, first || null);
       insertedRlmTextNodes.add(anchor);
     }
+  }
+
+  function startsWithBlockChild(block) {
+    for (const node of block.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.textContent.replaceAll(RLM, "").trim()) return false;
+        continue;
+      }
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        return safeMatches(node, "p, div, ul, ol, blockquote, pre, table, h1, h2, h3, h4, h5, h6");
+      }
+    }
+    return false;
   }
 
   function isolateInlineFragments(element) {
