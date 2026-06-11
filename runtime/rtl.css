@@ -191,7 +191,7 @@ li.local-mixed-rtl-message {
   padding-inline-end: 0 !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
-  text-align: start !important;
+  text-align: right !important;
 }
 
 ul.local-rtl-message > li,
@@ -203,10 +203,19 @@ ol.local-mixed-rtl-message > li,
 .local-mixed-rtl-message ul > li,
 .local-mixed-rtl-message ol > li {
   direction: rtl !important;
-  text-align: start !important;
+  text-align: right !important;
   unicode-bidi: plaintext !important;
   margin-inline-start: 0 !important;
   margin-inline-end: 0 !important;
+}
+
+/* Claude list items the classifier marked RTL must use isolate: plaintext rebases
+   on the first strong char, which flips Hebrew-dominant lines that open in English. */
+[data-llm="claude"] ul > li.local-rtl-message,
+[data-llm="claude"] ol > li.local-rtl-message,
+[data-llm="claude"] ul > li.local-mixed-rtl-message,
+[data-llm="claude"] ol > li.local-mixed-rtl-message {
+  unicode-bidi: isolate !important;
 }
 
 pre,
