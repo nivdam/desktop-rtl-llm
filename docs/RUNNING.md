@@ -54,10 +54,12 @@ If the app does not exist yet:
 
 The Claude bootstrap reads `runtime/rtl.css`, `runtime/rtl-classifier.js`,
 `runtime/rtl-runtime.js`, and `profiles/claude*.json` from this repo on every
-app launch. After editing them, just restart the app:
+app launch. After editing them, just restart the app.
+
+`pkill -f "Claude RTL.app"` leaves the main process alive — kill by PID:
 
 ```bash
-pkill -f "Claude RTL.app"
+ps -eo pid,command | grep "Claude RTL.app/Contents/MacOS/Claude" | grep -v grep | awk '{print $1}' | xargs kill
 open "$HOME/Applications/Claude RTL.app"
 ```
 
@@ -66,10 +68,25 @@ open "$HOME/Applications/Claude RTL.app"
 Only needed when `claude-installer.mjs` (bootstrap logic) changed:
 
 ```bash
-pkill -f "Claude RTL.app"
+ps -eo pid,command | grep "Claude RTL.app/Contents/MacOS/Claude" | grep -v grep | awk '{print $1}' | xargs kill
 ./run-rtl.sh claude --reinstall
 open "$HOME/Applications/Claude RTL.app"
 ```
+
+### Claude diagnostics
+
+Claude crashes instantly with `--remote-debugging-port`, and the patched copy has
+no Node inspector fuse — there is no CDP path into it. To see what the runtime
+does inside the app:
+
+1. Add temporary `console.log` lines in `runtime/rtl-runtime.js`.
+2. Launch with renderer console forwarded to a log:
+
+```bash
+ELECTRON_ENABLE_LOGGING=1 "$HOME/Applications/Claude RTL.app/Contents/MacOS/Claude" > /tmp/claude-rtl.log 2>&1 &
+```
+
+3. Grep the log, then remove the temporary logging.
 
 ### Check Claude install status
 
@@ -167,7 +184,9 @@ If the issue is in Claude:
 
 1. Verify whether the problem is reproducible in `Claude RTL.app`.
 2. Check local override values in `profiles/claude.local.json`.
-3. Reinstall Claude RTL after changing runtime behavior.
+3. After changing runtime/CSS/profile, restart `Claude RTL.app` (no reinstall).
+4. If classification looks wrong, use the Claude diagnostics flow above
+   (`ELECTRON_ENABLE_LOGGING=1` + temporary logging).
 
 If the issue is in Codex:
 

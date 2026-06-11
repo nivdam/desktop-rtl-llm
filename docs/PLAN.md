@@ -10,7 +10,7 @@ Keep Hebrew rendering stable in desktop LLM apps while minimizing manual steps a
 
 - usable
 - depends on `Claude RTL.app`
-- requires reinstall after changes
+- runtime/CSS/profile changes are restart-only (read from the repo at launch); reinstall only after installer changes
 - more fragile than Codex
 
 ### Short-term plan
