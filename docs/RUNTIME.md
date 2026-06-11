@@ -42,6 +42,17 @@ Claude uses a copied patched app bundle:
 
 This exists because the clean DevTools-based path was blocked on this machine.
 
+The patch lives in the Electron main process (`.vite/build/index.pre.js`).
+On every window load it reads `runtime/rtl-classifier.js`, `runtime/rtl-runtime.js`,
+`runtime/rtl.css`, and `profiles/claude*.json` from this repo and injects them
+via `webContents.insertCSS` + `webContents.executeJavaScript` — the same
+execution model as the Codex CDP injection. Copies baked at install time act
+as a fallback when the repo files are unreadable.
+
+Practical consequence: runtime/CSS/profile changes only need an app restart.
+Reinstall is needed only for `claude-installer.mjs` changes or Claude app updates
+(the launcher rebuilds automatically on app updates).
+
 Useful commands:
 
 ```bash
@@ -130,9 +141,11 @@ Claude Workspace/Cowork features can require restricted macOS virtualization ent
 
 ### Reinstall requirement
 
-Claude changes require reinstall.
+Claude runtime/CSS/profile changes require only an app restart (assets are
+read from the repo at launch). Reinstall is needed only for installer/bootstrap
+changes or Claude app updates.
 
-Codex changes usually do not.
+Codex changes never require reinstall; rerun the launcher.
 
 ## Debug Tools
 

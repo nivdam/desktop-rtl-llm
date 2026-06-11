@@ -50,9 +50,20 @@ If the app does not exist yet:
 ./run-rtl.sh claude
 ```
 
-### Reinstall Claude RTL after changes
+### Apply runtime/CSS/profile changes
 
-If `runtime/rtl.css`, `runtime/rtl-runtime.js`, `inject-runtime.mjs`, or Claude profile logic changed:
+The Claude bootstrap reads `runtime/rtl.css`, `runtime/rtl-classifier.js`,
+`runtime/rtl-runtime.js`, and `profiles/claude*.json` from this repo on every
+app launch. After editing them, just restart the app:
+
+```bash
+pkill -f "Claude RTL.app"
+open "$HOME/Applications/Claude RTL.app"
+```
+
+### Reinstall Claude RTL after installer changes
+
+Only needed when `claude-installer.mjs` (bootstrap logic) changed:
 
 ```bash
 pkill -f "Claude RTL.app"
@@ -120,17 +131,23 @@ Relevant app paths on this machine:
 
 ## When To Reinstall
 
-### Claude requires reinstall
+### Claude: restart for content, reinstall for installer
 
-Reinstall Claude RTL after changing:
+Restart `Claude RTL.app` (no reinstall) after changing:
 
 - `runtime/rtl.css`
+- `runtime/rtl-classifier.js`
 - `runtime/rtl-runtime.js`
-- `inject-runtime.mjs`
-- `claude-installer.mjs`
-- `profiles/claude.json`
+- `profiles/claude.json` / `profiles/claude.local.json`
 
-### Codex usually does not require reinstall
+Reinstall (`./run-rtl.sh claude --reinstall`) only after changing:
+
+- `claude-installer.mjs`
+
+Claude app updates are handled automatically: `./run-rtl.sh claude` rebuilds
+the copy when `/Applications/Claude.app` changed.
+
+### Codex does not require reinstall
 
 For Codex, rerunning:
 
@@ -138,7 +155,7 @@ For Codex, rerunning:
 ./run-rtl.sh codex
 ```
 
-is normally enough after:
+is enough after:
 
 - CSS changes
 - runtime logic changes

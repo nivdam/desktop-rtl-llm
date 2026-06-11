@@ -18,9 +18,8 @@ const COPY_APP = path.join(os.homedir(), "Applications", "Claude RTL.app");
 const SOURCE_ASAR = path.join(SOURCE_APP, "Contents", "Resources", "app.asar");
 const COPY_ASAR = path.join(COPY_APP, "Contents", "Resources", "app.asar");
 const COPY_PLIST = path.join(COPY_APP, "Contents", "Info.plist");
-const PRELOAD_PATCH_PATHS = [
-  ".vite/build/mainView.js",
-  ".vite/build/mainWindow.js",
+const MAIN_PATCH_PATHS = [
+  ".vite/build/index.pre.js",
 ];
 const MARKER = "// LOCAL-RTL-DESKTOP-CLAUDE-BOOTSTRAP";
 
@@ -89,7 +88,7 @@ function install() {
       runtimePath: path.join(ROOT, "runtime", "rtl-runtime.js"),
       cssPath: path.join(ROOT, "runtime", "rtl.css"),
       profilePath: path.join(ROOT, "profiles", "claude.json"),
-      patchedFiles: PRELOAD_PATCH_PATHS,
+      patchedFiles: MAIN_PATCH_PATHS,
       signingIdentity: "ad-hoc",
       entitlements: "source entitlements plus com.apple.security.cs.disable-library-validation",
       fusesFlipped: [],
@@ -213,7 +212,7 @@ function patchClaudeAsar() {
   const archive = readAsar(COPY_ASAR);
   const bootstrap = buildBootstrap();
 
-  for (const filePath of PRELOAD_PATCH_PATHS) {
+  for (const filePath of MAIN_PATCH_PATHS) {
     const current = archive.files.get(filePath);
     if (!current) throw new Error(`${filePath} not found in app.asar`);
     const original = current.toString("utf8");
@@ -224,49 +223,121 @@ function patchClaudeAsar() {
   writeAsar(COPY_ASAR, archive);
 
   const verify = readAsar(COPY_ASAR);
-  for (const filePath of PRELOAD_PATCH_PATHS) {
+  for (const filePath of MAIN_PATCH_PATHS) {
     const patched = verify.files.get(filePath)?.toString("utf8") || "";
     if (!patched.includes(MARKER)) throw new Error(`ASAR verification failed: bootstrap marker missing in ${filePath}`);
   }
 }
 
 function buildBootstrap() {
-  const css = readFileSync(path.join(ROOT, "runtime", "rtl.css"), "utf8");
-  const classifier = readFileSync(path.join(ROOT, "runtime", "rtl-classifier.js"), "utf8");
-  const runtime = `${classifier}\n${readFileSync(path.join(ROOT, "runtime", "rtl-runtime.js"), "utf8")}`;
-  const profile = mergeJsonObjects(
+  const bakedCss = readFileSync(path.join(ROOT, "runtime", "rtl.css"), "utf8");
+  const bakedClassifier = readFileSync(path.join(ROOT, "runtime", "rtl-classifier.js"), "utf8");
+  const bakedRuntime = readFileSync(path.join(ROOT, "runtime", "rtl-runtime.js"), "utf8");
+  const bakedProfile = mergeJsonObjects(
     readOptionalJson(path.join(ROOT, "profiles", "claude.json")),
     readOptionalJson(path.join(ROOT, "profiles", "claude.local.json")),
   );
 
+  // Runs in the Electron MAIN process (appended to .vite/build/index.pre.js).
+  // Reads runtime/CSS/profile from the repo on every app launch, so editing
+  // them only needs an app restart. The baked copies are a fallback for when
+  // the repo is unreadable (moved, deleted, permissions).
   return `${MARKER}
 (() => {
   try {
-    const electron = require("electron");
-    const css = ${JSON.stringify(css)};
-    const runtime = ${JSON.stringify(runtime)};
-    const profile = ${JSON.stringify(profile)};
-    const start = () => {
+    const { app } = require("electron");
+    const fs = require("fs");
+    const path = require("path");
+
+    const runtimeDir = ${JSON.stringify(path.join(ROOT, "runtime"))};
+    const profilesDir = ${JSON.stringify(path.join(ROOT, "profiles"))};
+    const baked = {
+      css: ${JSON.stringify(bakedCss)},
+      classifier: ${JSON.stringify(bakedClassifier)},
+      runtime: ${JSON.stringify(bakedRuntime)},
+      profile: ${JSON.stringify(bakedProfile)},
+    };
+    let assets = null;
+
+    function readTextOrNull(filePath) {
       try {
-        window.__LOCAL_RTL_PROFILE__ = { ...profile, diagnostics: profile.verboseDiagnostics === true };
-        electron.webFrame.insertCSS(css, { cssOrigin: "author" });
-        (0, eval)(runtime);
-      } catch (error) {
-        console.error("[RTL] Claude runtime start failed:", error);
+        return fs.readFileSync(filePath, "utf8");
+      } catch {
+        return null;
       }
-    };
-    const schedule = () => {
-      const run = () => setTimeout(start, 1500);
-      if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 3000 });
-      else run();
-    };
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", schedule, { once: true });
-    } else {
-      schedule();
     }
+
+    function readJsonOrNull(filePath) {
+      const text = readTextOrNull(filePath);
+      if (text === null) return null;
+      try {
+        return JSON.parse(text);
+      } catch {
+        return null;
+      }
+    }
+
+    function isPlainObject(value) {
+      return value && typeof value === "object" && !Array.isArray(value);
+    }
+
+    function mergeObjects(base, override) {
+      if (!isPlainObject(base) || !isPlainObject(override)) {
+        return override === undefined ? base : override;
+      }
+      const output = { ...base };
+      for (const [key, value] of Object.entries(override)) {
+        output[key] = key in base ? mergeObjects(base[key], value) : value;
+      }
+      return output;
+    }
+
+    function loadAssets() {
+      if (assets) return assets;
+      const css = readTextOrNull(path.join(runtimeDir, "rtl.css"));
+      const classifier = readTextOrNull(path.join(runtimeDir, "rtl-classifier.js"));
+      const runtime = readTextOrNull(path.join(runtimeDir, "rtl-runtime.js"));
+      const baseProfile = readJsonOrNull(path.join(profilesDir, "claude.json"));
+      const localProfile = readJsonOrNull(path.join(profilesDir, "claude.local.json")) || {};
+      if (css === null || classifier === null || runtime === null || baseProfile === null) {
+        console.warn("[RTL] repo runtime files unreadable; using assets baked at install time");
+        assets = baked;
+      } else {
+        assets = { css, classifier, runtime, profile: mergeObjects(baseProfile, localProfile) };
+      }
+      return assets;
+    }
+
+    function shouldSkip(url) {
+      return !url || url === "about:blank" || url.startsWith("devtools://") || url.startsWith("chrome://");
+    }
+
+    function injectInto(webContents) {
+      if (webContents.isDestroyed()) return;
+      if (shouldSkip(String(webContents.getURL() || ""))) return;
+      const current = loadAssets();
+      const profileScript = "window.__LOCAL_RTL_PROFILE__ = " + JSON.stringify({ ...current.profile, diagnostics: current.profile.verboseDiagnostics === true }) + ";";
+      webContents.insertCSS(current.css, { cssOrigin: "author" }).catch((error) => {
+        console.error("[RTL] insertCSS failed:", error);
+      });
+      webContents.executeJavaScript([profileScript, current.classifier, current.runtime].join("\\n")).catch((error) => {
+        console.error("[RTL] runtime injection failed:", error);
+      });
+    }
+
+    app.on("web-contents-created", (_event, webContents) => {
+      webContents.on("did-finish-load", () => {
+        setTimeout(() => {
+          try {
+            injectInto(webContents);
+          } catch (error) {
+            console.error("[RTL] injection error:", error);
+          }
+        }, 1500);
+      });
+    });
   } catch (error) {
-    console.error("[RTL] Claude preload bootstrap failed:", error);
+    console.error("[RTL] Claude main bootstrap failed:", error);
   }
 })();`;
 }

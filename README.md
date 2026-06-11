@@ -79,8 +79,9 @@ docs/
 - `profiles/*.local.json` are ignored by git.
 - `logs/` and `state/` are ignored by git.
 - Claude auto-syncs from `/Applications/Claude.app` when launched with `./run-rtl.sh claude`.
-- Claude still requires reinstall after runtime or CSS changes.
+- Claude reads runtime/CSS/profile from this repo at launch — restart the app after changes; reinstall only after `claude-installer.mjs` changes.
 - Codex does not require reinstall for normal runtime or CSS changes.
+- Tests: `node --test tests/*.test.mjs` (pure classifier logic, no dependencies).
 
 ## Documentation
 
