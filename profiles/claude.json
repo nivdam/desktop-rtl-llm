@@ -10,6 +10,7 @@
   "wrapTextNodes": true,
   "verboseDiagnostics": false,
   "directionStrategy": "first-strong-with-ratio-fallback",
+  "mixedRtlRatioThreshold": 0.08,
   "editableStrategy": "dynamic-first-strong",
   "renderedMessageStrategy": "first-strong-isolate",
   "urlHints": ["claude.ai", "claude", "anthropic"],

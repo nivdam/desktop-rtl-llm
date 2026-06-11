@@ -38,7 +38,7 @@
   const includeAllowRoots = profile.includeAllowRoots === true;
   const wrapTextNodes = profile.wrapTextNodes !== false;
   const editableStrategy = String(profile.editableStrategy || "direction-auto-plaintext");
-  const mixedRtlRatioThreshold = appName === "claude" ? 0.08 : 0.3;
+  const mixedRtlRatioThreshold = Number.isFinite(profile.mixedRtlRatioThreshold) ? profile.mixedRtlRatioThreshold : 0.3;
 
   const stats = {
     scanned: 0,

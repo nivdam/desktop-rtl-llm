@@ -9,6 +9,7 @@
   "bidiAnchors": false,
   "verboseDiagnostics": false,
   "directionStrategy": "first-strong-with-ratio-fallback",
+  "mixedRtlRatioThreshold": 0.3,
   "editableStrategy": "direction-auto-plaintext",
   "renderedMessageStrategy": "first-strong-isolate",
   "urlHints": ["app://-/index.html", "codex", "openai", "chatgpt.com", "chat.openai.com"],
