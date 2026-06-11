@@ -4,15 +4,10 @@
 
 This repo owns the local RTL runtime code for desktop LLM apps.
 
-The actual installed runtime may still exist here on the machine:
-
-```text
-$HOME/Library/Application Support/rtl-desktop-runtime
-```
-
-That installed copy is the currently active local deployment.
-
-This repo is the tracked project version.
+This repo is the only deployment. The old copy at
+`$HOME/Library/Application Support/rtl-desktop-runtime` was a stale
+April 2026 deployment and was deleted on 2026-06-11. The Spotlight
+launchers and `Claude RTL.app` are built from this repo directly.
 
 ## Integration Models
 
@@ -62,10 +57,10 @@ Useful commands:
 
 Local overrides are app-specific.
 
-Reason:
-
-- Claude keeps wrapping enabled because mixed Hebrew/English sentences often need explicit segmentation.
-- Codex keeps wrapping disabled because the extra wrappers caused worse mixed-text ordering there.
+Current local state: `wrapTextNodes` is disabled for both Claude and Codex
+via `profiles/*.local.json`. The extra wrappers caused worse mixed-text
+ordering in Codex, and Claude was later switched off as well. The tracked
+default in `profiles/claude.json` remains `true`; the local override wins.
 
 ### Mixed LTR/RTL classification
 

@@ -2,7 +2,7 @@
   "name": "codex",
   "appName": "Codex",
   "profileVersion": 1,
-  "testedAppVersions": ["Codex 26.415.40636", "Codex 26.422.30944"],
+  "testedAppVersions": ["Codex 26.415.40636", "Codex 26.422.30944", "Codex 26.608.12217"],
   "appPath": "/Applications/Codex.app/Contents/MacOS/Codex",
   "minimumScore": 70,
   "includeAllowRoots": false,

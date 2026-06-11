@@ -2,7 +2,7 @@
   "name": "claude",
   "appName": "Claude",
   "profileVersion": 1,
-  "testedAppVersions": ["Claude 1.4758.0"],
+  "testedAppVersions": ["Claude 1.4758.0", "Claude 1.11847.5"],
   "appPath": "/Applications/Claude.app/Contents/MacOS/Claude",
   "minimumScore": 70,
   "includeAllowRoots": false,
