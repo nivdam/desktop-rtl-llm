@@ -13,13 +13,26 @@ modified.
 
 ## Before / after
 
-**Claude Desktop** — the original app vs. `Claude RTL.app`, same conversation:
+### Claude Desktop
 
-![Claude Desktop: before and after](./docs/media/claude-side-by-side.png)
+The original app — Hebrew left-aligned, table columns reversed, scrambled mixed
+lines:
 
-**Codex Desktop** — before vs. after runtime injection:
+![Claude Desktop without RTL](./docs/media/raw/claude-before.png)
 
-![Codex Desktop: before and after](./docs/media/codex-side-by-side.png)
+The same conversation in `Claude RTL.app`:
+
+![Claude Desktop with RTL](./docs/media/raw/claude-after.png)
+
+### Codex Desktop
+
+Without the runtime:
+
+![Codex Desktop without RTL](./docs/media/raw/codex-before.png)
+
+After `./run-rtl.sh codex`:
+
+![Codex Desktop with RTL](./docs/media/raw/codex-after.png)
 
 ## What you get
 
