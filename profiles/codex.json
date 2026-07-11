@@ -1,9 +1,20 @@
 {
   "name": "codex",
-  "appName": "Codex",
+  "appName": "ChatGPT",
   "profileVersion": 1,
-  "testedAppVersions": ["Codex 26.415.40636", "Codex 26.422.30944", "Codex 26.608.12217"],
-  "appPath": "/Applications/Codex.app/Contents/MacOS/Codex",
+  "testedAppVersions": ["Codex 26.415.40636", "Codex 26.422.30944", "Codex 26.608.12217", "ChatGPT 26.707.41301"],
+  "appCandidates": [
+    {
+      "appName": "ChatGPT",
+      "appPath": "/Applications/ChatGPT.app/Contents/MacOS/ChatGPT",
+      "launchStrategy": "direct"
+    },
+    {
+      "appName": "Codex",
+      "appPath": "/Applications/Codex.app/Contents/MacOS/Codex",
+      "launchStrategy": "bundle"
+    }
+  ],
   "minimumScore": 70,
   "includeAllowRoots": false,
   "bidiAnchors": false,

@@ -1,6 +1,6 @@
 # desktop-rtl-llm
 
-**Hebrew and Arabic finally render right in Claude Desktop and Codex Desktop.**
+**Hebrew and Arabic finally render right in Claude Desktop and ChatGPT/Codex Desktop.**
 
 Chat in Hebrew with Claude or Codex on macOS and the UI fights you: sentences are
 left-aligned, mixed Hebrew/English lines read out of order, list numbers jump from
@@ -24,7 +24,7 @@ The same conversation in `Claude RTL.app`:
 
 ![Claude Desktop with RTL](./docs/media/raw/claude-after.png)
 
-### Codex Desktop
+### ChatGPT/Codex Desktop
 
 Without the runtime:
 
@@ -104,7 +104,8 @@ Deep dives: [docs/RUNTIME.md](./docs/RUNTIME.md) ·
   rebuild.
 - Spotlight launchers ("Claude RTL Launcher" / "Codex RTL Launcher"):
   `node setup-launchers.mjs`.
-- Tested against Claude Desktop 1.11847 and Codex Desktop 26.608. App DOM changes
+- Tested against Claude Desktop 1.11847, Codex Desktop 26.608, and ChatGPT Desktop
+  26.707. App DOM changes
   are absorbed in `profiles/*.json` selectors, not code rewrites.
 
 ## License
