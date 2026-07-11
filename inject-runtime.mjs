@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, acc
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadProfile as loadProfileFromDisk } from "./profile-loader.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PROFILE_DIR = path.join(ROOT, "profiles");
@@ -33,11 +34,13 @@ const options = parseArgs(process.argv.slice(2));
 mkdirSync(LOG_DIR, { recursive: true });
 mkdirSync(STATE_DIR, { recursive: true });
 
-main().catch((error) => {
-  logEvent("fatal", { error: String(error?.stack || error) });
-  console.error(`Error: ${error.message || error}`);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(process.exitCode ?? 0))
+  .catch((error) => {
+    logEvent("fatal", { error: String(error?.stack || error) });
+    console.error(`Error: ${error.message || error}`);
+    process.exit(1);
+  });
 
 async function main() {
   if (options.listApps) {
@@ -663,41 +666,7 @@ function nextClaudeProbeSteps(state) {
 }
 
 function loadProfile(appName) {
-  const basePath = path.join(PROFILE_DIR, `${appName}.json`);
-  const localPath = path.join(PROFILE_DIR, `${appName}.local.json`);
-  const base = readJson(basePath);
-  const local = existsSync(localPath) ? readJson(localPath) : {};
-  const merged = deepMerge(base, local);
-  if (existsSync(localPath) && Object.keys(local).length > 0) {
-    merged.__localOverridePath = localPath;
-  }
-  return merged;
-}
-
-function readJson(filePath) {
-  try {
-    return JSON.parse(readFileSync(filePath, "utf8"));
-  } catch (error) {
-    throw new Error(`Invalid JSON in ${filePath}: ${error.message}`);
-  }
-}
-
-function deepMerge(base, override) {
-  if (Array.isArray(base) || Array.isArray(override)) {
-    return override === undefined ? base : override;
-  }
-  if (!isPlainObject(base) || !isPlainObject(override)) {
-    return override === undefined ? base : override;
-  }
-  const output = { ...base };
-  for (const [key, value] of Object.entries(override)) {
-    output[key] = key in base ? deepMerge(base[key], value) : value;
-  }
-  return output;
-}
-
-function isPlainObject(value) {
-  return value && typeof value === "object" && !Array.isArray(value);
+  return loadProfileFromDisk(PROFILE_DIR, appName);
 }
 
 function validateProfile(profile) {
@@ -765,6 +734,11 @@ function capitalize(value) {
 }
 
 function spawnApp(profile, args) {
+  if (profile.launchStrategy === "direct") {
+    spawn(profile.appPath, args, { detached: true, stdio: "ignore" }).unref();
+    return;
+  }
+
   const bundlePath = getBundlePath(profile.appPath);
   if (bundlePath) {
     spawn("open", ["-na", bundlePath, "--args", ...args], { detached: true, stdio: "ignore" }).unref();

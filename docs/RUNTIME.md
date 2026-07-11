@@ -15,6 +15,13 @@ launchers and `Claude RTL.app` are built from this repo directly.
 
 Codex uses runtime injection.
 
+Since desktop version 26.707.41301, OpenAI ships Codex inside
+`/Applications/ChatGPT.app`. The `codex` target resolves that current bundle first
+and falls back to the legacy `/Applications/Codex.app` bundle. The current ChatGPT
+binary is launched directly because its app bundle no longer preserves Chromium
+debug flags passed through `open --args`; the legacy Codex bundle keeps the old
+launch path.
+
 It does not require a copied app bundle.
 
 Main behavior:

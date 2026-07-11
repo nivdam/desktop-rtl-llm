@@ -4,11 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { loadProfile } from "./profile-loader.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const HOME = os.homedir();
 const APPLICATIONS_DIR = path.join(HOME, "Applications");
 const NODE_BIN = process.execPath;
+const PROFILE_DIR = path.join(ROOT, "profiles");
 
 const LAUNCHERS = [
   {
@@ -20,7 +22,6 @@ const LAUNCHERS = [
   {
     name: "Codex RTL Launcher",
     target: "codex",
-    sourceApp: "/Applications/Codex.app",
     iconName: "codex",
   },
 ];
@@ -42,7 +43,8 @@ function main() {
 }
 
 function createLauncher(launcher) {
-  assertAppExists(launcher.sourceApp);
+  const sourceApp = launcher.sourceApp ?? sourceAppFromProfile(launcher.target);
+  assertAppExists(sourceApp);
 
   const appPath = launcherPath(launcher);
   const script = [
@@ -54,12 +56,12 @@ function createLauncher(launcher) {
   ];
 
   run("osacompile", ["-o", appPath, ...script.flatMap((line) => ["-e", line])]);
-  installIcon(launcher, appPath);
+  installIcon(launcher, sourceApp, appPath);
   touch(appPath);
 }
 
-function installIcon(launcher, appPath) {
-  const sourceIcon = readIconPath(launcher.sourceApp);
+function installIcon(launcher, sourceApp, appPath) {
+  const sourceIcon = readIconPath(sourceApp);
   const resourcesDir = path.join(appPath, "Contents", "Resources");
   const targetIcon = path.join(resourcesDir, `${launcher.iconName}.icns`);
 
@@ -69,6 +71,13 @@ function installIcon(launcher, appPath) {
   const plist = path.join(appPath, "Contents", "Info.plist");
   run("/usr/libexec/PlistBuddy", ["-c", `Set :CFBundleIconFile ${launcher.iconName}`, plist]);
   run("/usr/libexec/PlistBuddy", ["-c", `Set :CFBundleIconName ${launcher.iconName}`, plist]);
+}
+
+function sourceAppFromProfile(target) {
+  const profile = loadProfile(PROFILE_DIR, target);
+  const bundlePath = profile.appPath.replace(/\/Contents\/MacOS\/[^/]+$/, "");
+  if (!bundlePath.endsWith(".app")) throw new Error(`App bundle not found for ${target}: ${profile.appPath}`);
+  return bundlePath;
 }
 
 function readIconPath(appPath) {
