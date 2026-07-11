@@ -41,6 +41,8 @@ cd /Users/nivdamianovich/BizoDam/desktop-rtl-llm
 ```
 
 This launches or attaches to Codex and injects the RTL runtime.
+It does not create a separate Codex or ChatGPT copy: the normal ChatGPT process
+remains the visible app until it is quit.
 
 ## Recreate Launchers
 
@@ -55,7 +57,8 @@ The script:
 
 - creates both launcher apps under `~/Applications`
 - embeds the current Node path so Spotlight launches work without shell setup
-- copies the icons from `/Applications/Claude.app` and `/Applications/Codex.app`
+- copies the icons from `/Applications/Claude.app` and the installed Codex target
+  (`/Applications/ChatGPT.app`, with legacy `/Applications/Codex.app` fallback)
 - registers the apps with LaunchServices for Spotlight
 
 ## Important

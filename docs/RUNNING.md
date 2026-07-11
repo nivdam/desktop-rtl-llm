@@ -110,6 +110,12 @@ ELECTRON_ENABLE_LOGGING=1 "$HOME/Applications/Claude RTL.app/Contents/MacOS/Clau
 
 This launches or attaches to Codex and injects the RTL runtime.
 
+The Codex target does not create a separate RTL app. It launches the normal
+`/Applications/ChatGPT.app` process and injects RTL into that running process.
+Opening ChatGPT from its regular icon while that process is still running shows
+the same injected UI. To return to a non-injected session, quit ChatGPT completely
+and open it normally instead of through the RTL launcher.
+
 ### Diagnostics
 
 ```bash
@@ -142,9 +148,13 @@ Relevant app paths on this machine:
 
 ```text
 /Applications/Claude.app
-/Applications/Codex.app
+/Applications/ChatGPT.app
 ~/Applications/Claude RTL.app
 ```
+
+OpenAI renamed the Codex desktop app to ChatGPT in version 26.707.41301. The
+`codex` runtime target supports both the current `ChatGPT.app` bundle and the
+legacy `Codex.app` bundle during the migration.
 
 ## When To Reinstall
 
